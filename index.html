@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — 패스트라이프</title>
+<meta name="description" content="퍼블 페이지에 바로 붙여넣을 수 있는 무료 위젯 빌더. 코딩 없이 몇 번의 클릭으로 완성하세요.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── 리셋 & 변수 ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f9f8f5;
+  --bg2:        #f1f0eb;
+  --surface:    #ffffff;
+  --border:     rgba(0,0,0,0.08);
+  --border-md:  rgba(0,0,0,0.14);
+  --text:       #1c1b18;
+  --text2:      #6a6960;
+  --text3:      #a8a79e;
+  --accent:     #1c1b18;
+  --accent-fg:  #f9f8f5;
+  --tag-bg:     rgba(0,0,0,0.06);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
+  --radius:     16px;
+  --radius-sm:  10px;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-sans:  'Outfit', -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:         #111110;
+    --bg2:        #181816;
+    --surface:    #1e1d1b;
+    --border:     rgba(255,255,255,0.08);
+    --border-md:  rgba(255,255,255,0.14);
+    --text:       #f0efe9;
+    --text2:      #a0a09a;
+    --text3:      #555550;
+    --accent:     #f0efe9;
+    --accent-fg:  #111110;
+    --tag-bg:     rgba(255,255,255,0.08);
+    --shadow-sm:  0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md:  0 4px 16px rgba(0,0,0,0.4);
+    --shadow-lg:  0 12px 40px rgba(0,0,0,0.5);
+  }
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── 헤더 ── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(249,248,245,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 0.5px solid var(--border);
+  padding: 0 32px;
+}
+@media (prefers-color-scheme: dark) {
+  header { background: rgba(17,17,16,0.85); }
+}
+.header-inner {
+  max-width: 1080px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text);
+}
+.logo-mark {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-mark svg { width: 16px; height: 16px; }
+.logo-name {
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+}
+.logo-sub {
+  font-size: 12px; color: var(--text3);
+  border-left: 1px solid var(--border-md); padding-left: 10px; margin-left: 2px;
+}
+nav { display: flex; align-items: center; gap: 4px; }
+nav a {
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  text-decoration: none; padding: 6px 12px; border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+nav a:hover { color: var(--text); background: var(--tag-bg); }
+nav a.active { color: var(--text); }
+.nav-cta {
+  font-size: 13px; font-weight: 500;
+  background: var(--accent); color: var(--accent-fg) !important;
+  padding: 7px 16px !important; border-radius: 8px;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.nav-cta:hover { opacity: 0.8; background: var(--accent) !important; }
+
+/* ── 히어로 ── */
+.hero {
+  max-width: 1080px; margin: 0 auto;
+  padding: 96px 32px 80px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+}
+.hero-left {}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 20px;
+}
+.hero-eyebrow::before {
+  content: ''; width: 20px; height: 1px; background: var(--text3);
+}
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 5vw, 58px);
+  line-height: 1.12; letter-spacing: -0.02em;
+  color: var(--text); margin-bottom: 20px;
+}
+.hero-title em { font-style: italic; color: var(--text2); }
+.hero-desc {
+  font-size: 16px; color: var(--text2); line-height: 1.7;
+  max-width: 440px; margin-bottom: 36px;
+}
+.hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  padding: 11px 22px; border-radius: 10px; border: none;
+  cursor: pointer; text-decoration: none; transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--accent); color: var(--accent-fg);
+}
+.btn-primary:hover { opacity: 0.82; }
+.btn-secondary {
+  background: transparent; color: var(--text2);
+  border: 0.5px solid var(--border-md);
+}
+.btn-secondary:hover { background: var(--tag-bg); color: var(--text); }
+
+.hero-stats {
+  display: flex; align-items: center; gap: 28px; margin-top: 40px;
+  padding-top: 32px; border-top: 0.5px solid var(--border);
+}
+.stat-item {}
+.stat-num {
+  font-family: var(--font-serif); font-size: 28px; font-weight: 400;
+  color: var(--text); line-height: 1;
+}
+.stat-label { font-size: 12px; color: var(--text3); margin-top: 4px; }
+.stat-divider { width: 1px; height: 36px; background: var(--border-md); }
+
+/* 히어로 우측: 위젯 미리보기 스택 */
+.hero-right { position: relative; height: 360px; }
+.preview-stack {
+  position: absolute; inset: 0;
+}
+.preview-card {
+  position: absolute; background: var(--surface);
+  border: 0.5px solid var(--border-md); border-radius: var(--radius);
+  box-shadow: var(--shadow-md); overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.preview-card:nth-child(1) {
+  width: 88%; left: 6%; top: 0;
+  transform: rotate(-2.5deg) translateY(8px);
+  z-index: 1;
+}
+.preview-card:nth-child(2) {
+  width: 88%; left: 6%; top: 40px;
+  transform: rotate(0.8deg);
+  z-index: 2;
+}
+.preview-card:nth-child(3) {
+  width: 88%; left: 6%; top: 180px;
+  transform: rotate(-1deg) translateY(-4px);
+  z-index: 3;
+}
+.preview-stack:hover .preview-card:nth-child(1) { transform: rotate(-3.5deg) translateY(-12px); }
+.preview-stack:hover .preview-card:nth-child(2) { transform: rotate(1.2deg) translateY(4px); }
+.preview-stack:hover .preview-card:nth-child(3) { transform: rotate(-1.5deg) translateY(16px); }
+
+.preview-card-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-bottom: 0.5px solid var(--border);
+  background: var(--bg2);
+}
+.preview-card-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.preview-card-title { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; }
+.preview-card-body { padding: 16px; }
+
+/* 카운트다운 미리보기 */
+.mini-countdown {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 0;
+}
+.mini-box {
+  background: var(--accent); color: var(--accent-fg);
+  border-radius: 6px; padding: 8px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  min-width: 42px;
+}
+.mini-box-num { font-family: var(--font-serif); font-size: 22px; line-height: 1; font-weight: 400; }
+.mini-box-lbl { font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+.mini-colon { font-size: 18px; font-weight: 300; color: var(--text3); margin-bottom: 12px; }
+
+/* 마퀴 미리보기 */
+.mini-marquee-wrap {
+  background: var(--accent); border-radius: 8px; overflow: hidden;
+  height: 36px; display: flex; align-items: center; position: relative;
+}
+.mini-marquee-track {
+  display: flex; white-space: nowrap; gap: 0;
+  animation: miniMarquee 6s linear infinite;
+}
+.mini-marquee-text {
+  font-size: 12px; font-weight: 500; color: var(--accent-fg);
+  padding: 0 24px; opacity: 0.9; white-space: nowrap;
+}
+@keyframes miniMarquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* 숫자 카운터 미리보기 */
+.mini-counter {
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 8px 0;
+}
+.mini-counter-item { text-align: center; }
+.mini-counter-num {
+  font-family: var(--font-serif); font-size: 24px; color: var(--text);
+  line-height: 1;
+}
+.mini-counter-lbl { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.mini-counter-divider { width: 1px; height: 32px; background: var(--border-md); }
+
+/* ── 섹션 공통 ── */
+.section { max-width: 1080px; margin: 0 auto; padding: 0 32px 96px; }
+.section-header { margin-bottom: 40px; }
+.section-eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-serif); font-size: 34px; letter-spacing: -0.02em;
+  color: var(--text); margin-bottom: 12px;
+}
+.section-desc { font-size: 15px; color: var(--text2); max-width: 480px; line-height: 1.7; }
+
+/* ── 위젯 카드 그리드 ── */
+.widget-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+.widget-card {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  cursor: pointer; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+}
+.widget-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  border-color: var(--border-md);
+}
+.widget-card-thumb {
+  height: 180px; background: var(--bg2);
+  border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding: 24px;
+}
+.widget-card-body { padding: 20px 22px 22px; flex: 1; display: flex; flex-direction: column; }
+.widget-card-tags { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.tag {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
+  background: var(--tag-bg); color: var(--text3);
+  padding: 3px 9px; border-radius: 99px;
+}
+.widget-card-name {
+  font-size: 17px; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--text); margin-bottom: 6px;
+}
+.widget-card-desc {
+  font-size: 13px; color: var(--text2); line-height: 1.6; flex: 1;
+}
+.widget-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; padding-top: 14px; border-top: 0.5px solid var(--border);
+}
+.widget-card-badge {
+  font-size: 11px; font-weight: 500; color: var(--text3);
+  display: flex; align-items: center; gap: 5px;
+}
+.badge-free {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  background: rgba(26,122,74,0.1); color: #1a7a4a;
+  padding: 2px 8px; border-radius: 99px;
+}
+@media (prefers-color-scheme: dark) {
+  .badge-free { background: rgba(74,186,122,0.15); color: #4aba7a; }
+}
+.widget-card-link {
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  display: flex; align-items: center; gap: 4px;
+  transition: color 0.15s; text-decoration: none;
+}
+.widget-card:hover .widget-card-link { color: var(--text); }
+.arrow-icon { transition: transform 0.15s; }
+.widget-card:hover .arrow-icon { transform: translateX(3px); }
+
+/* 카드 썸네일 내 위젯 미리보기 */
+
+/* FAQ 아코디언 미리보기 */
+.thumb-faq { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 320px; }
+.faq-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+}
+.faq-row.open { border-color: var(--border-md); }
+.faq-q { font-size: 12px; font-weight: 500; color: var(--text); }
+.faq-chevron { font-size: 14px; color: var(--text3); transition: transform 0.2s; }
+.faq-row.open .faq-chevron { transform: rotate(180deg); color: var(--text); }
+.faq-a { font-size: 11px; color: var(--text2); padding: 0 14px 8px; margin-top: -4px; background: var(--surface); border: 0.5px solid var(--border-md); border-top: none; border-radius: 0 0 8px 8px; line-height: 1.5; }
+
+/* 롤링 공지바 미리보기 */
+.thumb-rolling { width: 100%; max-width: 320px; }
+.rolling-bar { background: var(--accent); border-radius: 8px; overflow: hidden; height: 40px; display: flex; align-items: center; position: relative; margin-bottom: 8px; }
+.rolling-bar::before, .rolling-bar::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 32px; z-index: 2; pointer-events: none;
+}
+.rolling-bar::before { left: 0; background: linear-gradient(to right, var(--accent), transparent); }
+.rolling-bar::after  { right: 0; background: linear-gradient(to left, var(--accent), transparent); }
+.rolling-track {
+  display: flex; white-space: nowrap;
+  animation: rollingScroll 5s linear infinite;
+}
+@keyframes rollingScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.rolling-text { font-size: 12px; font-weight: 500; color: var(--accent-fg); padding: 0 32px; white-space: nowrap; opacity: 0.92; }
+
+/* 카운트다운 미리보기 (카드용) */
+.thumb-countdown { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.thumb-countdown-title { font-size: 11px; font-weight: 500; color: var(--text2); }
+.thumb-countdown-boxes { display: flex; align-items: center; gap: 5px; }
+.thumb-box {
+  background: var(--accent); color: var(--accent-fg);
+  border-radius: 6px; padding: 8px 10px; min-width: 44px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.thumb-box-num { font-size: 20px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.thumb-box-lbl { font-size: 8px; opacity: 0.6; letter-spacing: 0.06em; }
+.thumb-colon { font-size: 16px; color: var(--text3); font-weight: 300; margin-bottom: 12px; }
+
+/* 숫자 카운터 미리보기 (카드용) */
+.thumb-counter {
+  display: flex; align-items: stretch; gap: 0;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 10px; overflow: hidden; width: 100%; max-width: 320px;
+}
+.thumb-counter-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 16px 8px; text-align: center;
+  position: relative;
+}
+.thumb-counter-item:not(:last-child)::after {
+  content: ''; position: absolute; right: 0; top: 20%; height: 60%;
+  width: 1px; background: var(--border-md);
+}
+.thumb-counter-num {
+  font-family: var(--font-serif); font-size: 22px; color: var(--text);
+  line-height: 1; margin-bottom: 4px;
+}
+.thumb-counter-lbl { font-size: 10px; color: var(--text3); }
+
+/* ── 특징 섹션 ── */
+.features-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-top: 40px;
+}
+.feature-card {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 22px;
+}
+.feature-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--tag-bg); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px; font-size: 18px;
+}
+.feature-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.feature-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+/* ── 하단 CTA 배너 ── */
+.cta-banner {
+  max-width: 1080px; margin: 0 auto; padding: 0 32px 96px;
+}
+.cta-inner {
+  background: var(--accent); border-radius: 20px;
+  padding: 56px 64px;
+  display: flex; align-items: center; justify-content: space-between; gap: 40px;
+  position: relative; overflow: hidden;
+}
+.cta-inner::before {
+  content: '';
+  position: absolute; right: -60px; top: -60px;
+  width: 240px; height: 240px; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.cta-inner::after {
+  content: '';
+  position: absolute; right: 60px; bottom: -80px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+.cta-text {}
+.cta-title {
+  font-family: var(--font-serif); font-size: 32px; letter-spacing: -0.02em;
+  color: var(--accent-fg); margin-bottom: 10px; line-height: 1.2;
+}
+.cta-desc { font-size: 15px; color: rgba(249,248,245,0.65); line-height: 1.6; }
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-fg); color: var(--accent);
+  font-size: 14px; font-weight: 600; padding: 13px 26px;
+  border-radius: 10px; text-decoration: none; white-space: nowrap;
+  flex-shrink: 0; transition: opacity 0.15s; position: relative; z-index: 1;
+}
+.cta-btn:hover { opacity: 0.9; }
+
+/* ── 푸터 ── */
+footer {
+  border-top: 0.5px solid var(--border);
+  padding: 32px;
+}
+.footer-inner {
+  max-width: 1080px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.footer-copy { font-size: 12px; color: var(--text3); }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 12px; color: var(--text3); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: var(--text2); }
+
+/* ── 페이드인 애니메이션 ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  opacity: 0; animation: fadeUp 0.6s ease forwards;
+}
+.fade-up:nth-child(1) { animation-delay: 0.05s; }
+.fade-up:nth-child(2) { animation-delay: 0.12s; }
+.fade-up:nth-child(3) { animation-delay: 0.19s; }
+.fade-up:nth-child(4) { animation-delay: 0.26s; }
+
+/* ── 반응형 ── */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; padding: 60px 24px 48px; gap: 48px; }
+  .hero-right { height: 260px; }
+  .widget-grid { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .cta-inner { flex-direction: column; text-align: center; padding: 40px 32px; }
+  header { padding: 0 20px; }
+  .logo-sub { display: none; }
+  nav a:not(.nav-cta) { display: none; }
+  .section { padding: 0 24px 64px; }
+  .cta-banner { padding: 0 24px 64px; }
+}
+@media (max-width: 560px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 16px; }
+  .hero-title { font-size: 34px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <span class="logo-name">패스트라이프</span>
+      <span class="logo-sub">위젯 갤러리</span>
+    </a>
+    <nav>
+      <a href="#" class="active">위젯 갤러리</a>
+      <a href="https://www.fastlife.kr/channels/L2NoYW5uZWxzLzE0MjU/A00005/" target='_black'>문의하기</a>
+      <a href="#widgets" class="nav-cta">바로 사용하기</a>
+    </nav>
+  </div>
+</header>
+
+<!-- 히어로 -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">위젯 갤러리</div>
+    <h1 class="hero-title">
+      코딩 없이,<br>
+      <em>바로 쓰는</em><br>
+      무료 위젯
+    </h1>
+    <p class="hero-desc">
+      퍼블 코드블럭에 붙여넣기만 하면 완성.
+      설정 한 번으로 내 페이지에 딱 맞는 위젯을 만들어보세요.
+    </p>
+    <div class="hero-actions">
+      <a href="#widgets" class="btn btn-primary">
+        위젯 둘러보기
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="https://www.fastlife.kr/" class="btn btn-secondary" target='_blank'>패스트라이프 소개</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">4</div>
+        <div class="stat-label">무료 위젯</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num">0줄</div>
+        <div class="stat-label">필요한 코드</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">퍼블 호환</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="preview-stack">
+      <!-- 카드 1 -->
+      <div class="preview-card">
+        <div class="preview-card-header">
+          <div class="preview-card-dot" style="background:#ff5f57;"></div>
+          <div class="preview-card-dot" style="background:#febc2e;"></div>
+          <div class="preview-card-dot" style="background:#28c840;"></div>
+          <div class="preview-card-title" style="margin-left:4px;">카운트다운 타이머</div>
+        </div>
+        <div class="preview-card-body">
+          <div class="mini-countdown">
+            <div class="mini-box"><div class="mini-box-num" id="hero-d">03</div><div class="mini-box-lbl">DAYS</div></div>
+            <div class="mini-colon">:</div>
+            <div class="mini-box"><div class="mini-box-num" id="hero-h">14</div><div class="mini-box-lbl">HRS</div></div>
+            <div class="mini-colon">:</div>
+            <div class="mini-box"><div class="mini-box-num" id="hero-m">22</div><div class="mini-box-lbl">MIN</div></div>
+            <div class="mini-colon">:</div>
+            <div class="mini-box"><div class="mini-box-num" id="hero-s">09</div><div class="mini-box-lbl">SEC</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- 카드 2 -->
+      <div class="preview-card">
+        <div class="preview-card-header">
+          <div class="preview-card-dot" style="background:#ff5f57;"></div>
+          <div class="preview-card-dot" style="background:#febc2e;"></div>
+          <div class="preview-card-dot" style="background:#28c840;"></div>
+          <div class="preview-card-title" style="margin-left:4px;">롤링 마퀴 배너바</div>
+        </div>
+        <div class="preview-card-body">
+          <div class="mini-marquee-wrap">
+            <div class="mini-marquee-track">
+              <div class="mini-marquee-text">🎉 특별 할인 진행 중 &nbsp;·&nbsp; 지금 바로 확인하세요</div>
+              <div class="mini-marquee-text">🎉 특별 할인 진행 중 &nbsp;·&nbsp; 지금 바로 확인하세요</div>
+              <div class="mini-marquee-text">🎉 특별 할인 진행 중 &nbsp;·&nbsp; 지금 바로 확인하세요</div>
+              <div class="mini-marquee-text">🎉 특별 할인 진행 중 &nbsp;·&nbsp; 지금 바로 확인하세요</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 카드 3 -->
+      <div class="preview-card">
+        <div class="preview-card-header">
+          <div class="preview-card-dot" style="background:#ff5f57;"></div>
+          <div class="preview-card-dot" style="background:#febc2e;"></div>
+          <div class="preview-card-dot" style="background:#28c840;"></div>
+          <div class="preview-card-title" style="margin-left:4px;">숫자 카운터</div>
+        </div>
+        <div class="preview-card-body" style="padding:10px 16px;">
+          <div style="display:flex;align-items:stretch;gap:0;border:0.5px solid var(--border);border-radius:8px;overflow:hidden;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 6px;position:relative;">
+              <div style="position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--border-md);"></div>
+              <div style="font-family:var(--font-serif);font-size:20px;color:var(--text);line-height:1;">12,400</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:3px;">누적 수강생</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 6px;position:relative;">
+              <div style="position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--border-md);"></div>
+              <div style="font-family:var(--font-serif);font-size:20px;color:var(--text);line-height:1;">98.6%</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:3px;">만족도</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 6px;">
+              <div style="font-family:var(--font-serif);font-size:20px;color:var(--text);line-height:1;">340개</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:3px;">완료 프로젝트</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 위젯 갤러리 -->
+<section class="section" id="widgets">
+  <div class="section-header">
+    <div class="section-eyebrow">위젯 목록</div>
+    <h2 class="section-title">원하는 위젯을 골라 시작하세요</h2>
+    <p class="section-desc">설정하고, 복사하고, 붙여넣으면 끝. 디자인 프리셋으로 몇 초 만에 완성됩니다.</p>
+  </div>
+
+  <div class="widget-grid">
+
+    <!-- FAQ 아코디언 -->
+    <a href="faq_accordion.html" class="widget-card fade-up">
+      <div class="widget-card-thumb">
+        <div class="thumb-faq">
+          <div class="faq-row open">
+            <span class="faq-q">자주 묻는 질문 제목입니다</span>
+            <span class="faq-chevron">⌄</span>
+          </div>
+          <div class="faq-a">이 위젯은 퍼블 코드블럭에서 바로 사용할 수 있습니다.</div>
+          <div class="faq-row">
+            <span class="faq-q">두 번째 질문 항목입니다</span>
+            <span class="faq-chevron">⌄</span>
+          </div>
+          <div class="faq-row">
+            <span class="faq-q">세 번째 질문 항목입니다</span>
+            <span class="faq-chevron">⌄</span>
+          </div>
+        </div>
+      </div>
+      <div class="widget-card-body">
+        <div class="widget-card-tags">
+          <span class="tag">정보 제공</span>
+          <span class="tag">UX</span>
+        </div>
+        <div class="widget-card-name">FAQ 아코디언</div>
+        <div class="widget-card-desc">자주 묻는 질문을 아코디언 형태로 깔끔하게 정리하세요. 항목 추가·수정이 쉽고 다양한 스타일을 지원합니다.</div>
+        <div class="widget-card-footer">
+          <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
+          <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>
+        </div>
+      </div>
+    </a>
+
+    <!-- 롤링 마퀴 배너바 -->
+    <a href="rolling_marquee_banner.html" class="widget-card fade-up">
+      <div class="widget-card-thumb">
+        <div class="thumb-rolling" style="display:flex;flex-direction:column;gap:8px;">
+          <div class="rolling-bar">
+            <div class="rolling-track">
+              <span class="rolling-text">🎉 이벤트 진행 중 &nbsp;·&nbsp; 마감 임박 할인 &nbsp;·&nbsp; 지금 확인하세요</span>
+              <span class="rolling-text">🎉 이벤트 진행 중 &nbsp;·&nbsp; 마감 임박 할인 &nbsp;·&nbsp; 지금 확인하세요</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <div style="height:6px;border-radius:3px;background:var(--border-md);flex:1;"></div>
+            <div style="height:6px;border-radius:3px;background:var(--border-md);flex:2;"></div>
+            <div style="height:6px;border-radius:3px;background:var(--border-md);flex:1.5;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="widget-card-body">
+        <div class="widget-card-tags">
+          <span class="tag">공지</span>
+          <span class="tag">마케팅</span>
+        </div>
+        <div class="widget-card-name">롤링 마퀴 배너바</div>
+        <div class="widget-card-desc">텍스트가 가로로 흘러가는 마퀴 배너. 스크롤 방향·속도·구분자를 자유롭게 설정하고 양 끝 페이드 효과를 지원합니다.</div>
+        <div class="widget-card-footer">
+          <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
+          <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>
+        </div>
+      </div>
+    </a>
+
+    <!-- 롤링 텍스트 공지바 -->
+    <a href="rolling_notice_bar.html" class="widget-card fade-up">
+      <div class="widget-card-thumb" style="flex-direction:column;gap:10px;">
+        <div style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:6px;">
+          <div style="background:var(--accent);color:var(--accent-fg);border-radius:8px;padding:10px 16px;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:space-between;">
+            <span>📢 첫 번째 공지 메시지입니다</span>
+            <span style="opacity:0.5;font-size:10px;">1/3</span>
+          </div>
+          <div style="display:flex;justify-content:center;gap:4px;">
+            <div style="width:16px;height:3px;border-radius:2px;background:var(--accent);"></div>
+            <div style="width:6px;height:3px;border-radius:2px;background:var(--border-md);"></div>
+            <div style="width:6px;height:3px;border-radius:2px;background:var(--border-md);"></div>
+          </div>
+        </div>
+      </div>
+      <div class="widget-card-body">
+        <div class="widget-card-tags">
+          <span class="tag">공지</span>
+          <span class="tag">슬라이드</span>
+        </div>
+        <div class="widget-card-name">롤링 텍스트 공지바</div>
+        <div class="widget-card-desc">여러 공지를 슬라이드로 순환하는 배너. 자동 전환 속도·높이·색상을 설정하고 클릭 링크도 연결할 수 있습니다.</div>
+        <div class="widget-card-footer">
+          <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
+          <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>
+        </div>
+      </div>
+    </a>
+
+    <!-- 카운트다운 타이머 -->
+    <a href="countdown_timer.html" class="widget-card fade-up">
+      <div class="widget-card-thumb">
+        <div class="thumb-countdown">
+          <div class="thumb-countdown-title">⚡ 마감까지 남은 시간</div>
+          <div class="thumb-countdown-boxes">
+            <div class="thumb-box">
+              <div class="thumb-box-num" id="cd-d">03</div>
+              <div class="thumb-box-lbl">DAYS</div>
+            </div>
+            <div class="thumb-colon">:</div>
+            <div class="thumb-box">
+              <div class="thumb-box-num" id="cd-h">14</div>
+              <div class="thumb-box-lbl">HRS</div>
+            </div>
+            <div class="thumb-colon">:</div>
+            <div class="thumb-box">
+              <div class="thumb-box-num" id="cd-m">22</div>
+              <div class="thumb-box-lbl">MIN</div>
+            </div>
+            <div class="thumb-colon">:</div>
+            <div class="thumb-box">
+              <div class="thumb-box-num" id="cd-s">09</div>
+              <div class="thumb-box-lbl">SEC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="widget-card-body">
+        <div class="widget-card-tags">
+          <span class="tag">마케팅</span>
+          <span class="tag">긴박감</span>
+        </div>
+        <div class="widget-card-name">카운트다운 타이머</div>
+        <div class="widget-card-desc">이벤트 마감까지 남은 시간을 실시간으로 표시. 6가지 디자인 프리셋과 마감 문구 설정을 지원합니다.</div>
+        <div class="widget-card-footer">
+          <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
+          <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- 특징 -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-eyebrow">왜 패스트라이프 위젯인가요</div>
+    <h2 class="section-title">퍼블에 최적화된 위젯</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">1분 안에 완성</div>
+      <div class="feature-desc">디자인 프리셋 선택 → 텍스트 수정 → 코드 복사. 코딩 지식이 없어도 바로 만들 수 있습니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <div class="feature-title">붙여넣기로 적용</div>
+      <div class="feature-desc">생성된 iframe 코드를 퍼블 코드블럭에 붙여넣으면 끝. 서버나 외부 서비스 없이 동작합니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <div class="feature-title">모바일 반응형</div>
+      <div class="feature-desc">모든 위젯은 모바일 환경을 자동으로 감지해 폰트 크기와 레이아웃을 최적화합니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-title">다양한 디자인 프리셋</div>
+      <div class="feature-desc">색상·크기·굵기·간격까지 세밀하게 조정 가능. 브랜드 톤에 맞게 커스텀하세요.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-title">데이터 외부 전송 없음</div>
+      <div class="feature-desc">모든 설정은 브라우저 안에서만 처리됩니다. 개인정보나 콘텐츠가 외부로 전송되지 않습니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🆓</div>
+      <div class="feature-title">완전 무료</div>
+      <div class="feature-desc">로그인도, 결제도 없습니다. 패스트라이프가 퍼블 크리에이터를 위해 무료로 제공합니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA 배너 -->
+<div class="cta-banner">
+  <div class="cta-inner">
+    <div class="cta-text">
+      <div class="cta-title">페이지 구축, 도움이 필요하신가요?</div>
+      <div class="cta-desc">패스트라이프는 퍼블 기반 페이지 구축 대행 서비스도 운영합니다.<br>기획부터 완성까지, 빠르게 도와드립니다.</div>
+    </div>
+    <a href="https://www.fastlife.kr/channels/L2NoYW5uZWxzLzE0MjU/A00005/" class="cta-btn" target='_black'>
+      구축 대행 문의하기
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- 푸터 -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">© 2026 (주)패스트라이프. 위젯 갤러리는 무료로 제공됩니다.</div>
+    <div class="footer-links">
+      <a href="https://www.fastlife.kr/channels/L2NoYW5uZWxzLzE0MjU/A00005/" target='_black'>구축 대행 문의</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* 히어로 카운트다운 실시간 */
+(function() {
+  const target = new Date();
+  target.setDate(target.getDate() + 3);
+  target.setHours(23, 59, 59, 0);
+
+  function pad(n) { return String(Math.max(0, n)).padStart(2, '0'); }
+
+  function tick() {
+    const diff = target - Date.now();
+    if (diff <= 0) return;
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor(diff % 86400000 / 3600000);
+    const m = Math.floor(diff % 3600000 / 60000);
+    const s = Math.floor(diff % 60000 / 1000);
+    ['hero-d','cd-d'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=pad(d); });
+    ['hero-h','cd-h'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=pad(h); });
+    ['hero-m','cd-m'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=pad(m); });
+    ['hero-s','cd-s'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=pad(s); });
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+/* 스크롤 진입 시 fade-up */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = 'running';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach(el => {
+  el.style.animationPlayState = 'paused';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

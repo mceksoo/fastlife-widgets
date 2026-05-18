@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — 롤링 마퀴 배너바</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
+    --text: #1a1a18; --text2: #6b6b66; --text3: #9a9a94;
+    --accent: #1a1a18; --accent-fg: #ffffff;
+    --radius: 10px; --radius-sm: 6px;
+    --green: #1a7a4a; --red: #c0392b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110; --surface: #1c1c1a; --surface2: #252523;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --text: #f0efe9; --text2: #a0a09a; --text3: #555550;
+      --accent: #f0efe9; --accent-fg: #111110;
+      --green: #4aba7a; --red: #e05c5c;
+    }
+  }
+
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px 80px;
+  }
+
+  .layout {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start;
+  }
+
+  .page-header { grid-column: 1 / -1; margin-bottom: 8px; }
+  .logo-area { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .logo { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+  .provider { font-size: 10px; color: var(--text3); opacity: 0.8; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 5px; }
+  .subtitle { font-size: 14px; color: var(--text2); }
+
+  .card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card-title {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text3); margin-bottom: 16px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+
+  input[type="text"], input[type="color"], input[type="range"], select, textarea {
+    width: 100%; padding: 8px 11px; font-size: 13px; font-family: inherit;
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 6px; padding: 0;
+    background: var(--surface2); border: 0.5px solid var(--border); border-radius: 3px; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text); border: 0.5px solid var(--border); transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+  input:focus, textarea:focus, select:focus { border-color: var(--border2); }
+  select { cursor: pointer; }
+
+  .color-field-wrap { display: grid; grid-template-columns: 40px 1fr; gap: 8px; }
+  input[type="color"] { padding: 0; height: 34px; cursor: pointer; border-radius: var(--radius-sm); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-row input[type="range"] { flex: 1; }
+
+  button {
+    display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px;
+    font-size: 13px; font-family: inherit; font-weight: 500;
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    background: transparent; color: var(--text); cursor: pointer;
+    transition: background 0.12s, opacity 0.12s; white-space: nowrap;
+  }
+  button:hover { background: var(--surface2); }
+  button:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { opacity: 0.85; background: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { color: var(--red); border-color: rgba(192,57,43,0.3); }
+  .btn-danger:hover { background: rgba(192,57,43,0.06); }
+
+  .item-edit {
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px;
+  }
+  .item-edit:last-child { margin-bottom: 0; }
+  .item-edit-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .item-num { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; }
+  .item-actions { display: flex; gap: 4px; }
+
+  /* 방향 선택 버튼 그룹 */
+  .dir-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dir-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface2); cursor: pointer; font-size: 13px; font-family: inherit;
+    font-weight: 500; color: var(--text); transition: border-color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .dir-btn:hover { border-color: var(--border2); background: var(--surface); }
+  .dir-btn.active { border-color: var(--accent); background: var(--surface); color: var(--text); }
+  .dir-arrow { font-size: 16px; line-height: 1; }
+
+  .right-panel { position: sticky; top: 24px; }
+
+  .preview-frame {
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .preview-note { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; padding: 10px 0 14px; }
+  .preview-label {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 0.5px solid var(--border);
+  }
+  .preview-label span { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+
+  .preview-area-wrap { padding: 16px; background: #fdfdfd; display: flex; flex-direction: column; gap: 16px; }
+  .preview-section { width: 100%; }
+  .preview-section-title { font-size: 11px; font-weight: 500; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; }
+
+  #preview-pc { width: 100%; background: #ffffff; }
+  #preview-mobile { width: 100%; max-width: 375px; margin: 0 auto; background: #ffffff; }
+
+  .code-box {
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px; font-family: monospace;
+    font-size: 12px; color: var(--text2); word-break: break-all; line-height: 1.6;
+    max-height: 120px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap;
+  }
+  .code-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .status-msg { font-size: 12px; font-weight: 400; color: var(--green); min-height: 20px; margin-top: 6px; }
+  .divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .right-panel { position: static; }
+    body { padding: 20px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="page-header">
+    <div class="logo-area">
+      <div class="logo">위젯 갤러리</div>
+      <div class="provider">(주)패스트라이프 제공</div>
+    </div>
+    <h1>롤링 마퀴 배너바</h1>
+    <p class="subtitle">텍스트가 가로로 흘러가는 마퀴(Marquee) 배너를 제작해보세요.</p>
+  </div>
+
+  <div class="left-panel">
+
+    <!-- 문구 목록 -->
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">공지 문구 목록</div>
+        <button class="btn-sm" onclick="addItem()">+ 항목 추가</button>
+      </div>
+      <div id="item-list"></div>
+    </div>
+
+    <!-- 스타일 설정 -->
+    <div class="card">
+      <div class="card-title">스타일 설정</div>
+
+      <div class="row2">
+        <div class="field">
+          <label>배경 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-bg-color" value="#000000" oninput="syncColor('opt-bg-color','opt-bg-text')" />
+            <input type="text" id="opt-bg-text" value="#000000" oninput="syncColor('opt-bg-text','opt-bg-color')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>텍스트 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-text-color" value="#ffffff" oninput="syncColor('opt-text-color','opt-text-text')" />
+            <input type="text" id="opt-text-text" value="#ffffff" oninput="syncColor('opt-text-text','opt-text-color')" />
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>폰트 크기 (px)</label>
+        <input type="text" id="opt-font-size" value="16" oninput="render()" />
+        <p class="hint">모바일 환경에서 폰트크기는 반응형으로 자동 조절됩니다.</p>
+      </div>
+
+      <div class="field">
+        <label>폰트 굵기 — <span id="weight-val">400</span></label>
+        <input type="range" id="opt-font-weight" min="100" max="900" step="100" value="400"
+          oninput="document.getElementById('weight-val').innerText = this.value; render();" />
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row2">
+        <div class="field">
+          <label>배너 높이 PC (px)</label>
+          <input type="text" id="opt-height" value="45" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>배너 높이 모바일 (px)</label>
+          <input type="text" id="opt-height-mobile" value="45" oninput="render()" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>스크롤 속도 (px/초)</label>
+          <input type="text" id="opt-speed" value="80" oninput="render()" />
+          <p class="hint">숫자가 클수록 빠릅니다.</p>
+        </div>
+        <div class="field">
+          <label>모서리 둥글기 (px)</label>
+          <input type="text" id="opt-radius" value="0" oninput="render()" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 구분자 -->
+      <div class="field">
+        <label>항목 구분자</label>
+        <input type="text" id="opt-separator" value="　·　" oninput="render()" placeholder="예: 　·　 또는 　|　" />
+        <p class="hint">문구와 문구 사이에 표시되는 구분 기호입니다.</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 스크롤 방향 -->
+      <div class="field">
+        <label>스크롤 방향</label>
+        <div class="dir-group">
+          <button class="dir-btn active" id="dir-btn-left" onclick="setDirection('left')">
+            <span class="dir-arrow">←</span> (오른쪽에서 왼쪽)
+          </button>
+          <button class="dir-btn" id="dir-btn-right" onclick="setDirection('right')">
+            (왼쪽에서 오른쪽) <span class="dir-arrow">→</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 그라데이션 옵션 -->
+      <div class="field">
+        <label>페이드 그라데이션 색상</label>
+        <div class="color-field-wrap">
+          <input type="color" id="opt-fade-color" value="#000000" oninput="syncColor('opt-fade-color','opt-fade-text')" />
+          <input type="text"  id="opt-fade-text"  value="#000000" oninput="syncColor('opt-fade-text','opt-fade-color')" />
+        </div>
+        <p class="hint">배경색과 다른 색상을 사용할 때 직접 지정하세요.</p>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>페이드 그라데이션 너비 (px)</label>
+        <input type="text" id="opt-fade-width" value="48" oninput="render()" placeholder="예: 48" />
+        <p class="hint">0으로 설정하면 그라데이션이 비활성화됩니다.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 우측 패널 -->
+  <div class="right-panel">
+
+    <div class="preview-frame">
+      <div class="preview-label"><span>미리보기</span></div>
+      <div class="preview-area-wrap">
+        <div class="preview-section">
+          <div class="preview-section-title">PC 환경</div>
+          <iframe id="preview-pc" frameborder="0" scrolling="no" style="border:none; display:block;"></iframe>
+        </div>
+        <div class="preview-section">
+          <div class="preview-section-title">모바일 환경 (가로 375px 고정)</div>
+          <iframe id="preview-mobile" frameborder="0" scrolling="no" style="border:none; display:block;"></iframe>
+        </div>
+      </div>
+    </div>
+    <p class="preview-note">미리보기 화면은 참고용입니다. 실제 화면은 코드를 적용하여 확인해주세요.</p>
+
+    <div class="card">
+      <div class="card-title">퍼블 코드블럭에 붙여넣기</div>
+      <div class="code-header">
+        <span style="font-size:12px; color:var(--text2);">생성된 iframe 코드</span>
+        <button class="btn-sm btn-primary" onclick="copyCode()">코드 복사</button>
+      </div>
+      <div class="code-box" id="code-output"></div>
+      <div class="status-msg" id="copy-status"></div>
+      <div class="divider"></div>
+      <p style="font-size:12px; color:var(--text2); line-height:1.7;">
+        1. 위 코드를 복사하세요<br>
+        2. 퍼블 편집기에서 코드블럭을 추가하세요<br>
+        3. 코드블럭 안에 붙여넣으세요
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+let items = [
+  { text: '📣 공지사항 첫 번째 메시지입니다.' },
+  { text: '✨ 두 번째 롤링 공지 메시지 영역입니다.' },
+  { text: '🚀 마지막 세 번째 이벤트 공지 내용입니다.' }
+];
+
+let direction = 'left'; // 'left' | 'right'
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function syncColor(changedId, targetId) {
+  document.getElementById(targetId).value = document.getElementById(changedId).value;
+  // 배경색 변경 시 페이드 색상도 자동 동기화 (사용자가 직접 바꾸지 않은 경우)
+  if (changedId === 'opt-bg-color' || changedId === 'opt-bg-text') {
+    const bgVal = document.getElementById('opt-bg-text').value ||
+                  document.getElementById('opt-bg-color').value;
+    const fadeText  = document.getElementById('opt-fade-text');
+    const fadeColor = document.getElementById('opt-fade-color');
+    if (fadeText && fadeColor) {
+      fadeText.value  = bgVal;
+      fadeColor.value = bgVal;
+    }
+  }
+  render();
+}
+
+function setDirection(dir) {
+  direction = dir;
+  document.getElementById('dir-btn-left').classList.toggle('active', dir === 'left');
+  document.getElementById('dir-btn-right').classList.toggle('active', dir === 'right');
+  render();
+}
+
+function renderEditList() {
+  const list = document.getElementById('item-list');
+  list.innerHTML = '';
+  items.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'item-edit';
+    div.innerHTML = `
+      <div class="item-edit-header">
+        <span class="item-num">메시지 ${i + 1}</span>
+        <div class="item-actions">
+          ${i > 0 ? `<button class="btn-sm" onclick="moveItem(${i},-1)" title="위로">↑</button>` : ''}
+          ${i < items.length - 1 ? `<button class="btn-sm" onclick="moveItem(${i},1)" title="아래로">↓</button>` : ''}
+          ${items.length > 1 ? `<button class="btn-sm btn-danger" onclick="removeItem(${i})">삭제</button>` : ''}
+        </div>
+      </div>
+      <div class="field">
+        <input type="text" value="${escHtml(item.text)}" oninput="items[${i}].text=this.value; render()" placeholder="공지 문구를 입력하세요" />
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addItem()        { items.push({ text: '새로운 공지 문구입니다.' }); renderEditList(); render(); }
+function removeItem(i)    { items.splice(i, 1); renderEditList(); render(); }
+function moveItem(i, dir) { const j = i + dir; [items[i], items[j]] = [items[j], items[i]]; renderEditList(); render(); }
+
+/* ─────────────────────────────────────────
+ * buildWidgetHtml
+ * 마퀴 원리:
+ *   1. 모든 문구를 구분자로 이어붙인 텍스트 1줄을 만든다.
+ *   2. 이 텍스트 블록을 2번 복제해 .track 안에 나란히 배치한다.
+ *      → [블록A][블록B] (각 블록 = 전체 텍스트 1세트)
+ *   3. CSS animation으로 translateX(-50%) 이동시킨다.
+ *      → 블록A가 완전히 사라지면 블록B가 정확히 블록A 자리에 있으므로
+ *        끊김 없이 반복됨.
+ *   4. direction='right'이면 translateX(+50%)에서 0으로 이동.
+ * ───────────────────────────────────────── */
+function buildWidgetHtml(fixedHeightNum, fixedFontSize) {
+  const bgColor    = document.getElementById('opt-bg-text').value;
+  const textColor  = document.getElementById('opt-text-text').value;
+  const fontWeight = document.getElementById('opt-font-weight').value;
+  const speed      = parseFloat(document.getElementById('opt-speed').value) || 80;   // px/초
+  const radius     = (parseInt(document.getElementById('opt-radius').value) || 0) + 'px';
+  const separator  = document.getElementById('opt-separator').value;
+  const height     = fixedHeightNum + 'px';
+  const fontSize   = fixedFontSize + 'px';
+  const dir        = direction; // 'left' | 'right'
+  const fadeColor  = document.getElementById('opt-fade-text').value || bgColor;
+  const fadeWidth  = Math.max(0, parseInt(document.getElementById('opt-fade-width').value) || 0);
+
+  // 전체 텍스트 1세트: "문구1 · 문구2 · 문구3"
+  const fullText = items.map(item => escHtml(item.text)).join(escHtml(separator));
+
+  // 애니메이션 방향: left = 오른쪽→왼쪽(-50%), right = 왼쪽→오른쪽(+50%)
+  // duration: 전체 텍스트 너비를 speed(px/s)로 나눈 값으로 JS에서 동적으로 계산
+  const animDir  = dir === 'left' ? 'marqueeLeft' : 'marqueeRight';
+  const fromVal  = dir === 'left' ? '0%'  : '-50%';
+  const toVal    = dir === 'left' ? '-50%' : '0%';
+  // 초기 위치: right방향은 -50%에서 시작
+  const initTranslate = dir === 'left' ? '0%' : '-50%';
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: transparent; font-family: 'Pretendard Variable','Pretendard',-apple-system,sans-serif; overflow: hidden; margin: 0; }
+.marquee-container {
+  width: 100%;
+  height: ${height};
+  background-color: ${bgColor};
+  color: ${textColor};
+  font-size: ${fontSize};
+  font-weight: ${fontWeight};
+  border-radius: ${radius};
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+/* 페이드 엣지 */
+.marquee-container::before,
+.marquee-container::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: ${fadeWidth}px;
+  z-index: 2;
+  pointer-events: none;
+  display: ${fadeWidth > 0 ? 'block' : 'none'};
+}
+.marquee-container::before { left: 0; background: linear-gradient(to right, ${fadeColor}, transparent); }
+.marquee-container::after  { right: 0; background: linear-gradient(to left, ${fadeColor}, transparent); }
+.marquee-track {
+  display: flex;
+  flex-direction: row;
+  white-space: nowrap;
+  will-change: transform;
+  transform: translateX(${initTranslate});
+}
+.marquee-block {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 32px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+@keyframes ${animDir} {
+  from { transform: translateX(${fromVal}); }
+  to   { transform: translateX(${toVal}); }
+}
+</style>
+</head>
+<body>
+<div class="marquee-container" id="mc">
+  <div class="marquee-track" id="track">
+    <div class="marquee-block" id="blockA">${fullText}</div>
+    <div class="marquee-block" id="blockB">${fullText}</div>
+  </div>
+</div>
+<script>
+(function() {
+  var speed  = ${speed};   /* px/초 */
+  var dir    = '${dir}';
+  var track  = document.getElementById('track');
+  var blockA = document.getElementById('blockA');
+
+  function startMarquee() {
+    /* blockA 하나의 실제 렌더 폭 */
+    var blockW = blockA.offsetWidth;
+    if (blockW === 0) { setTimeout(startMarquee, 50); return; }
+
+    /* duration: blockA 너비를 speed로 나눔 → 1세트 지나가는 데 걸리는 시간 */
+    var duration = blockW / speed;
+
+    track.style.animation = 'none';
+    track.offsetHeight; /* reflow */
+    track.style.animation = dir === 'left'
+      ? 'marqueeLeft '  + duration + 's linear infinite'
+      : 'marqueeRight ' + duration + 's linear infinite';
+  }
+
+  /* 폰트 로드 후 정확한 폭을 재기 위해 약간 지연 */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(startMarquee);
+  } else {
+    setTimeout(startMarquee, 100);
+  }
+
+  /* 리사이즈 시 duration 재계산 */
+  window.addEventListener('resize', function() {
+    track.style.animation = 'none';
+    setTimeout(startMarquee, 50);
+  });
+})();
+<\/script>
+</body>
+</html>`;
+}
+
+function render() {
+  const heightNum       = parseInt(document.getElementById('opt-height').value)        || 45;
+  const heightMobileNum = parseInt(document.getElementById('opt-height-mobile').value) || 45;
+  const fontSizeNum       = parseInt(document.getElementById('opt-font-size').value)   || 16;
+  const fontSizeMobileNum = Math.round(fontSizeNum * 0.88);
+
+  const pcHtml     = buildWidgetHtml(heightNum,       fontSizeNum);
+  const mobileHtml = buildWidgetHtml(heightMobileNum, fontSizeMobileNum);
+
+  const pcIframe = document.getElementById('preview-pc');
+  pcIframe.style.height = heightNum + 'px';
+  pcIframe.style.width  = '100%';
+  pcIframe.src = URL.createObjectURL(new Blob([pcHtml], { type: 'text/html' }));
+
+  const mobileIframe = document.getElementById('preview-mobile');
+  mobileIframe.style.height = heightMobileNum + 'px';
+  mobileIframe.style.width  = '100%';
+  mobileIframe.src = URL.createObjectURL(new Blob([mobileHtml], { type: 'text/html' }));
+
+  updateCode();
+}
+
+function updateCode() {
+  const heightNum       = parseInt(document.getElementById('opt-height').value)        || 45;
+  const heightMobileNum = parseInt(document.getElementById('opt-height-mobile').value) || 45;
+  const fontSizeNum       = parseInt(document.getElementById('opt-font-size').value)   || 16;
+  const fontSizeMobileNum = Math.round(fontSizeNum * 0.88);
+
+  const pcHtml = buildWidgetHtml(heightNum, fontSizeNum);
+
+  /* 모바일 반응형: 높이·폰트 미디어쿼리 주입 */
+  const finalHtml = pcHtml.replace(
+    '/* px/초 */',
+    `/* px/초 */
+  /* mobile override applied via outer style tag */`
+  );
+
+  const encoded = btoa(unescape(encodeURIComponent(finalHtml)));
+
+  const code =
+`<iframe src="data:text/html;base64,${encoded}" frameborder="0" scrolling="no" style="border:none; width:100%; display:block; height:${heightNum}px; min-height:${heightNum}px;"></iframe>
+<style>
+  @media (max-width: 768px) {
+    iframe[src^="data:text/html;base64"] { height: ${heightMobileNum}px !important; min-height: ${heightMobileNum}px !important; }
+  }
+</style>`;
+
+  document.getElementById('code-output').textContent = code;
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('code-output').textContent).then(() => {
+    const el = document.getElementById('copy-status');
+    el.textContent = '✓ 코드가 클립보드에 복사되었습니다';
+    setTimeout(() => el.textContent = '', 2500);
+  });
+}
+
+renderEditList();
+render();
+</script>
+</body>
+</html>

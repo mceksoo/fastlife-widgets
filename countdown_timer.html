@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — 카운트다운 타이머</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
+    --text: #1a1a18; --text2: #6b6b66; --text3: #9a9a94;
+    --accent: #1a1a18; --accent-fg: #ffffff;
+    --radius: 10px; --radius-sm: 6px;
+    --green: #1a7a4a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110; --surface: #1c1c1a; --surface2: #252523;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --text: #f0efe9; --text2: #a0a09a; --text3: #555550;
+      --accent: #f0efe9; --accent-fg: #111110; --green: #4aba7a;
+    }
+  }
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px 80px;
+  }
+
+  .layout { max-width: 1100px; margin: 0 auto; }
+  .page-header { margin-bottom: 8px; }
+  .logo-area { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .logo { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+  .provider { font-size: 10px; color: var(--text3); opacity: 0.8; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 5px; }
+  .subtitle { font-size: 14px; color: var(--text2); margin-bottom: 20px; }
+
+  /* 미리보기: full-width sticky */
+  .preview-sticky-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg); padding: 12px 0; margin-bottom: 20px;
+  }
+  .preview-frame {
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; width: 100%;
+  }
+  .preview-label {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 0.5px solid var(--border);
+  }
+  .preview-label span { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+  #preview-area { height: 220px; overflow-y: auto; display: flex; align-items: center; justify-content: center; }
+  .preview-note { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; padding: 10px 0 2px; }
+
+  /* 좌우 패널 */
+  .panels { display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
+  .right-panel { position: sticky; top: 320px; z-index: 90; }
+
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px; }
+  .card:last-child { margin-bottom: 0; }
+  .card-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 16px; }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+  input[type="text"], input[type="color"], select, textarea {
+    width: 100%; padding: 8px 11px; font-size: 13px; font-family: inherit; background: var(--surface2);
+    border: 0.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--border2); }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .color-field-wrap { display: grid; grid-template-columns: 40px 1fr; gap: 8px; }
+  input[type="color"] { padding: 0; height: 34px; cursor: pointer; border-radius: var(--radius-sm); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-row input[type="range"] { flex: 1; }
+  button {
+    display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; font-size: 13px; font-family: inherit; font-weight: 500;
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: transparent; color: var(--text);
+    cursor: pointer; transition: background 0.12s, opacity 0.12s; white-space: nowrap;
+  }
+  button:hover { background: var(--surface2); }
+  button:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { opacity: 0.85; background: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  .code-box { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-family: monospace; font-size: 12px; color: var(--text2); word-break: break-all; line-height: 1.6; max-height: 120px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
+  .code-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .status-msg { font-size: 12px; font-weight: 500; color: var(--green); min-height: 20px; margin-top: 8px; transition: opacity 0.3s; opacity: 0; }
+  .divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+
+  /* 프리셋 */
+  .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .preset-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 10px 6px; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface2); cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    font-family: inherit; width: 100%;
+  }
+  .preset-btn:hover { border-color: var(--border2); background: var(--surface); }
+  .preset-btn.active { border-color: var(--accent); background: var(--surface); }
+  .preset-preview {
+    width: 100%; height: 54px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 3px; overflow: hidden; border: 0.5px solid rgba(0,0,0,0.07);
+  }
+  .preset-box-mini {
+    width: 22px; height: 32px; border-radius: 3px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; font-size: 9px; font-weight: 700; line-height: 1; gap: 2px;
+  }
+  .preset-lbl { font-size: 6px; font-weight: 500; }
+  .preset-col { font-size: 12px; font-weight: 700; opacity: 0.3; margin-top: -6px; }
+  .preset-name { font-size: 11px; color: var(--text2); text-align: center; white-space: nowrap; }
+
+  /* 토글 */
+  .switch-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .switch-row span { font-size: 12px; color: var(--text2); }
+  .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .sw-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border2); transition: .4s; border-radius: 22px; }
+  .sw-track:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+  input:checked + .sw-track { background-color: var(--accent); }
+  input:checked + .sw-track:before { transform: translateX(18px); }
+
+  .subtext-toggle-row {
+    display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 5px;
+  }
+  .subtext-toggle-row .field-label { font-size: 12px; color: var(--text2); padding-top: 10px; }
+  .subtext-toggle-row .switch { margin-top: 2px; }
+
+  .msg-notice { font-size: 11px; color: var(--text3); margin-top: 4px; line-height: 1.6; }
+
+  @media (max-width: 860px) {
+    .panels { grid-template-columns: 1fr; }
+    .right-panel { position: static; }
+    body { padding: 20px 14px 60px; }
+    .preview-sticky-wrap { padding: 8px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="page-header">
+    <div class="logo-area">
+      <div class="logo">위젯 갤러리</div>
+      <div class="provider">(주)패스트라이프 제공</div>
+    </div>
+    <h1>카운트다운 타이머</h1>
+    <p class="subtitle">마감 임박 이벤트를 위한 세련된 타이머를 만들어보세요!</p>
+  </div>
+
+  <div class="preview-sticky-wrap">
+    <div class="preview-frame">
+      <div class="preview-label"><span>미리보기</span></div>
+      <div id="preview-area"></div>
+    </div>
+    <p class="preview-note">미리보기 화면은 참고용입니다. 실제 화면은 코드를 적용하여 확인해주세요.</p>
+  </div>
+
+  <div class="panels">
+
+    <div class="left-panel">
+
+      <!-- 디자인 프리셋 -->
+      <div class="card">
+        <div class="card-title">디자인 프리셋</div>
+        <div class="preset-grid">
+
+          <button class="preset-btn active" onclick="applyPreset('standard')" id="preset-standard">
+            <div class="preset-preview" style="background:#ffffff;">
+              <div class="preset-box-mini" style="background:#1a1a18;color:#fff;border-radius:3px;">00<span class="preset-lbl" style="color:#aaa;">D</span></div>
+              <div class="preset-col" style="color:#1a1a18;">:</div>
+              <div class="preset-box-mini" style="background:#1a1a18;color:#fff;border-radius:3px;">00<span class="preset-lbl" style="color:#aaa;">H</span></div>
+              <div class="preset-col" style="color:#1a1a18;">:</div>
+              <div class="preset-box-mini" style="background:#1a1a18;color:#fff;border-radius:3px;">00<span class="preset-lbl" style="color:#aaa;">M</span></div>
+            </div>
+            <span class="preset-name">스탠다드</span>
+          </button>
+
+          <button class="preset-btn" onclick="applyPreset('outline')" id="preset-outline">
+            <div class="preset-preview" style="background:#f8f8f6;">
+              <div class="preset-box-mini" style="background:transparent;color:#1a1a18;border:1.5px solid #1a1a18;border-radius:3px;">00<span class="preset-lbl" style="color:#aaa;">D</span></div>
+              <div class="preset-col" style="color:#1a1a18;">:</div>
+              <div class="preset-box-mini" style="background:transparent;color:#1a1a18;border:1.5px solid #1a1a18;border-radius:3px;">00<span class="preset-lbl" style="color:#aaa;">H</span></div>
+              <div class="preset-col" style="color:#1a1a18;">:</div>
+              <div class="preset-box-mini" style="background:transparent;color:#1a1a18;border:1.5px solid #1a1a18;border-radius:3px;">00<span class="preset-lbl" style="color:#aaa;">M</span></div>
+            </div>
+            <span class="preset-name">아웃라인</span>
+          </button>
+
+          <button class="preset-btn" onclick="applyPreset('flat')" id="preset-flat">
+            <div class="preset-preview" style="background:#ffffff;">
+              <div style="display:flex;align-items:baseline;gap:3px;">
+                <span style="font-size:14px;font-weight:800;color:#1a1a18;line-height:1;">00</span>
+                <span style="font-size:7px;color:#aaa;font-weight:600;margin-bottom:1px;">D</span>
+                <span style="font-size:11px;color:#ccc;font-weight:700;">:</span>
+                <span style="font-size:14px;font-weight:800;color:#1a1a18;line-height:1;">00</span>
+                <span style="font-size:7px;color:#aaa;font-weight:600;margin-bottom:1px;">H</span>
+                <span style="font-size:11px;color:#ccc;font-weight:700;">:</span>
+                <span style="font-size:14px;font-weight:800;color:#1a1a18;line-height:1;">00</span>
+                <span style="font-size:7px;color:#aaa;font-weight:600;margin-bottom:1px;">M</span>
+              </div>
+            </div>
+            <span class="preset-name">플랫 텍스트</span>
+          </button>
+
+          <button class="preset-btn" onclick="applyPreset('line-standard')" id="preset-line-standard">
+            <div class="preset-preview" style="background:#ffffff; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+              <span style="font-size:9px; font-weight:700; color:#1a1a18;">마감까지</span>
+              <div style="display:flex; align-items:center; gap:2px;">
+                <div class="preset-box-mini" style="width:18px; height:24px; background:#1a1a18;color:#fff;border-radius:2px; font-size:8px;">00</div>
+                <span style="font-size:10px;color:#ccc;font-weight:700;">:</span>
+                <div class="preset-box-mini" style="width:18px; height:24px; background:#1a1a18;color:#fff;border-radius:2px; font-size:8px;">00</div>
+                <span style="font-size:10px;color:#ccc;font-weight:700;">:</span>
+                <div class="preset-box-mini" style="width:18px; height:24px; background:#1a1a18;color:#fff;border-radius:2px; font-size:8px;">00</div>
+              </div>
+            </div>
+            <span class="preset-name">라인 스탠다드</span>
+          </button>
+
+          <button class="preset-btn" onclick="applyPreset('line-outline')" id="preset-line-outline">
+            <div class="preset-preview" style="background:#f8f8f6; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+              <span style="font-size:9px; font-weight:700; color:#1a1a18;">마감까지</span>
+              <div style="display:flex; align-items:center; gap:2px;">
+                <div class="preset-box-mini" style="width:18px; height:24px; background:transparent;color:#1a1a18;border:1.5px solid #1a1a18;border-radius:2px; font-size:8px;">00</div>
+                <span style="font-size:10px;color:#999;font-weight:700;">:</span>
+                <div class="preset-box-mini" style="width:18px; height:24px; background:transparent;color:#1a1a18;border:1.5px solid #1a1a18;border-radius:2px; font-size:8px;">00</div>
+                <span style="font-size:10px;color:#999;font-weight:700;">:</span>
+                <div class="preset-box-mini" style="width:18px; height:24px; background:transparent;color:#1a1a18;border:1.5px solid #1a1a18;border-radius:2px; font-size:8px;">00</div>
+              </div>
+            </div>
+            <span class="preset-name">라인 아웃라인</span>
+          </button>
+
+          <button class="preset-btn" onclick="applyPreset('line-flat')" id="preset-line-flat">
+            <div class="preset-preview" style="background:#ffffff; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+              <span style="font-size:9px; font-weight:700; color:#1a1a18;">마감까지</span>
+              <span style="font-size:13px; font-weight:800; color:#1a1a18; letter-spacing:0.05em;">00:00:00</span>
+            </div>
+            <span class="preset-name">라인 플랫</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- 기본 설정 -->
+      <div class="card">
+        <div class="card-title">기본 설정</div>
+        <div class="field">
+          <label>마감 일시 (YYYY-MM-DD HH:MM:SS)</label>
+          <input type="text" id="opt-date" value="" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>타이틀 문구</label>
+          <input type="text" id="opt-title" value="⚡ 마감 임박! 특별 할인 종료까지" oninput="render()" />
+        </div>
+        <div class="field">
+          <div class="subtext-toggle-row">
+            <span class="field-label">보조 문구 사용</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-subtext" checked onchange="render()">
+              <span class="sw-track"></span>
+            </label>
+          </div>
+          <input type="text" id="opt-subtext" value="* 지금 결제하시면 즉시 할인이 적용됩니다." oninput="render()" />
+        </div>
+        <div class="field">
+          <label>마감 후 문구</label>
+          <input type="text" id="opt-msg" value="이벤트가 종료되었습니다. 다음 기회를 기다려주세요!" oninput="render()" />
+        </div>
+      </div>
+
+      <!-- 기능 옵션 -->
+      <div class="card">
+        <div class="card-title">기능 옵션</div>
+        <div class="switch-row">
+          <span>마감문구 사용</span>
+          <label class="switch"><input type="checkbox" id="opt-use-msg" onchange="render()"><span class="sw-track"></span></label>
+        </div>
+        <p class="msg-notice">마감문구를 사용하면 카운트다운이 종료된 후 타이머 아래에 마감문구가 함께 표시됩니다. 마감문구 표시를 위해 위젯 세로 사이즈가 자동 조절됩니다.</p>
+        <div style="margin-top:12px;">
+          <div class="switch-row" style="margin-bottom:0;">
+            <span>단위 한글 표시 (일,시,분,초)</span>
+            <label class="switch"><input type="checkbox" id="opt-korean" onchange="render()"><span class="sw-track"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 스타일 설정 -->
+      <div class="card">
+        <div class="card-title">스타일 설정</div>
+        <div class="row2">
+          <div class="field"><label>위젯 배경색</label><div class="color-field-wrap"><input type="color" id="opt-bg" value="#ffffff" oninput="syncColor('opt-bg','opt-bg-t')" /><input type="text" id="opt-bg-t" value="#ffffff" oninput="syncColor('opt-bg-t','opt-bg')" /></div></div>
+          <div class="field"><label>타이틀 색상</label><div class="color-field-wrap"><input type="color" id="opt-color-title" value="#1a1a18" oninput="syncColor('opt-color-title','opt-color-title-t')" /><input type="text" id="opt-color-title-t" value="#1a1a18" oninput="syncColor('opt-color-title-t','opt-color-title')" /></div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>숫자 박스 색상</label><div class="color-field-wrap"><input type="color" id="opt-box-bg" value="#1a1a18" oninput="syncColor('opt-box-bg','opt-box-bg-t')" /><input type="text" id="opt-box-bg-t" value="#1a1a18" oninput="syncColor('opt-box-bg-t','opt-box-bg')" /></div></div>
+          <div class="field"><label>숫자 텍스트 색상</label><div class="color-field-wrap"><input type="color" id="opt-num-color" value="#ffffff" oninput="syncColor('opt-num-color','opt-num-color-t')" /><input type="text" id="opt-num-color-t" value="#ffffff" oninput="syncColor('opt-num-color-t','opt-num-color')" /></div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>단위 색상</label><div class="color-field-wrap"><input type="color" id="opt-label-color" value="#a0a09a" oninput="syncColor('opt-label-color','opt-label-color-t')" /><input type="text" id="opt-label-color-t" value="#a0a09a" oninput="syncColor('opt-label-color-t','opt-label-color')" /></div></div>
+          <div class="field"><label>보조 문구 색상</label><div class="color-field-wrap"><input type="color" id="opt-sub-color" value="#a0a09a" oninput="syncColor('opt-sub-color','opt-sub-color-t')" /><input type="text" id="opt-sub-color-t" value="#a0a09a" oninput="syncColor('opt-sub-color-t','opt-sub-color')" /></div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>마감 문구 색상</label><div class="color-field-wrap"><input type="color" id="opt-msg-color" value="#e03e3e" oninput="syncColor('opt-msg-color','opt-msg-color-t')" /><input type="text" id="opt-msg-color-t" value="#e03e3e" oninput="syncColor('opt-msg-color-t','opt-msg-color')" /></div></div>
+          <div class="field"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="row2">
+          <div class="field"><label>타이틀 크기 (px)</label><input type="text" id="opt-title-size" value="16" oninput="render()" /></div>
+          <div class="field"><label>타이틀 굵기 — <span id="opt-title-weight-val">600</span></label><div class="slider-row"><input type="range" id="opt-title-weight" min="100" max="900" step="100" value="600" oninput="updateSlider('opt-title-weight','opt-title-weight-val',''); render()" /></div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>보조문구 크기 (px)</label><input type="text" id="opt-sub-size" value="13" oninput="render()" /></div>
+          <div class="field"><label>보조문구 굵기 — <span id="opt-sub-weight-val">400</span></label><div class="slider-row"><input type="range" id="opt-sub-weight" min="100" max="900" step="100" value="400" oninput="updateSlider('opt-sub-weight','opt-sub-weight-val',''); render()" /></div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>숫자 크기 (px)</label><input type="text" id="opt-num-size" value="32" oninput="render()" /></div>
+          <div class="field"><label>숫자 굵기 — <span id="opt-num-weight-val">700</span></label><div class="slider-row"><input type="range" id="opt-num-weight" min="100" max="900" step="100" value="700" oninput="updateSlider('opt-num-weight','opt-num-weight-val',''); render()" /></div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>단위 크기 (px)</label><input type="text" id="opt-label-size" value="11" oninput="render()" /></div>
+          <div class="field"><label>단위 굵기 — <span id="opt-label-weight-val">500</span></label><div class="slider-row"><input type="range" id="opt-label-weight" min="100" max="900" step="100" value="500" oninput="updateSlider('opt-label-weight','opt-label-weight-val',''); render()" /></div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>마감문구 크기 (px)</label><input type="text" id="opt-msg-size" value="16" oninput="render()" /></div>
+          <div class="field"><label>마감문구 굵기 — <span id="opt-msg-weight-val">600</span></label><div class="slider-row"><input type="range" id="opt-msg-weight" min="100" max="900" step="100" value="600" oninput="updateSlider('opt-msg-weight','opt-msg-weight-val',''); render()" /></div></div>
+        </div>
+        <p class="hint">모바일 환경에서 폰트크기는 반응형으로 자동 조절됩니다.</p>
+        <div class="divider"></div>
+
+        <!-- 요소 간격: 안내 문구 수정 -->
+        <div class="field">
+          <label>요소 간격 (px) — <span style="font-size:11px; color:var(--text3);" id="spacing-hint-inline">타이틀/타이머/보조문구 간격</span></label>
+          <div class="slider-row">
+            <input type="range" id="opt-spacing" min="4" max="40" step="2" value="16" oninput="updateSlider('opt-spacing','opt-spacing-val','px'); render()" />
+            <span id="opt-spacing-val" style="font-size:12px; color:var(--text2); min-width:32px; text-align:right;">16px</span>
+          </div>
+        </div>
+
+        <!-- 카드 간격 슬라이더: 일/시/분/초 간 간격 -->
+        <div class="field">
+          <label>카드 간격 (px) — <span style="font-size:11px; color:var(--text3);">일·시·분·초 사이 간격</span></label>
+          <div class="slider-row">
+            <input type="range" id="opt-card-gap" min="2" max="24" step="1" value="10" oninput="updateSlider('opt-card-gap','opt-card-gap-val','px'); render()" />
+            <span id="opt-card-gap-val" style="font-size:12px; color:var(--text2); min-width:32px; text-align:right;">10px</span>
+          </div>
+        </div>
+
+        <!-- 배경 모서리 둥글기 -->
+        <div class="field">
+          <label>배경 모서리 둥글기 (px) — <span style="font-size:11px; color:var(--text3);">위젯 배경</span></label>
+          <div class="slider-row">
+            <input type="range" id="opt-widget-radius" min="0" max="30" step="1" value="12" oninput="updateSlider('opt-widget-radius','opt-widget-radius-val','px'); render()" />
+            <span id="opt-widget-radius-val" style="font-size:12px; color:var(--text2); min-width:32px; text-align:right;">12px</span>
+          </div>
+        </div>
+
+        <!-- 카드 모서리 둥글기 -->
+        <div class="field" style="margin-bottom:0;">
+          <label>카드 모서리 둥글기 (px) — <span style="font-size:11px; color:var(--text3);">타이머 카드</span></label>
+          <div class="slider-row">
+            <input type="range" id="opt-card-radius" min="0" max="20" step="1" value="8" oninput="updateSlider('opt-card-radius','opt-card-radius-val','px'); render()" />
+            <span id="opt-card-radius-val" style="font-size:12px; color:var(--text2); min-width:32px; text-align:right;">8px</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /.left-panel -->
+
+    <div class="right-panel">
+      <div class="card">
+        <div class="card-title">퍼블 코드블럭에 붙여넣기</div>
+        <div class="code-header">
+          <span style="font-size:12px; color:var(--text2);">생성된 iframe 코드</span>
+          <button class="btn-sm btn-primary" onclick="copyCode()">코드 복사</button>
+        </div>
+        <div class="code-box" id="code-output"></div>
+        <div class="status-msg" id="copy-status"></div>
+        <div class="divider"></div>
+        <p style="font-size:12px; color:var(--text2); line-height:1.7;">
+          1. 위 코드를 복사하세요<br>2. 퍼블 편집기에서 코드블럭을 추가하세요<br>3. 코드블럭 안에 붙여넣으세요
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const defaultDate = new Date();
+defaultDate.setDate(defaultDate.getDate() + 3);
+document.getElementById('opt-date').value = defaultDate.toISOString().slice(0, 10) + ' 23:59:59';
+
+function updateSlider(inputId, valId, unit) {
+  document.getElementById(valId).textContent = document.getElementById(inputId).value + unit;
+}
+function syncColor(changedId, targetId) {
+  document.getElementById(targetId).value = document.getElementById(changedId).value; render();
+}
+function setColorField(colorId, textId, value) {
+  document.getElementById(colorId).value = value; document.getElementById(textId).value = value;
+}
+function setWeight(id, valId, value) {
+  document.getElementById(id).value = value; document.getElementById(valId).textContent = value;
+}
+
+const PRESETS = {
+  standard:        { bg: '#ffffff', titleColor: '#1a1a18', boxBg: '#1a1a18', numColor: '#ffffff', labelColor: '#a0a09a', msgColor: '#e03e3e', subColor: '#a0a09a', boxRadius: 8, boxStyle: 'filled',  colonVisible: true,  isLine: false, titleWeight: 600, numWeight: 700, labelWeight: 500, msgWeight: 600, subWeight: 400 },
+  outline:         { bg: '#f8f8f6', titleColor: '#1a1a18', boxBg: '#1a1a18', numColor: '#1a1a18', labelColor: '#a0a09a', msgColor: '#e03e3e', subColor: '#a0a09a', boxRadius: 6, boxStyle: 'outline', colonVisible: true,  isLine: false, titleWeight: 500, numWeight: 700, labelWeight: 400, msgWeight: 600, subWeight: 400 },
+  flat:            { bg: '#ffffff', titleColor: '#1a1a18', boxBg: '#1a1a18', numColor: '#1a1a18', labelColor: '#a0a09a', msgColor: '#e03e3e', subColor: '#a0a09a', boxRadius: 0, boxStyle: 'flat',    colonVisible: false, isLine: false, titleWeight: 400, numWeight: 800, labelWeight: 400, msgWeight: 600, subWeight: 400 },
+  'line-standard': { bg: '#ffffff', titleColor: '#1a1a18', boxBg: '#1a1a18', numColor: '#ffffff', labelColor: '#a0a09a', msgColor: '#e03e3e', subColor: '#8a8a80', boxRadius: 4, boxStyle: 'filled',  colonVisible: true,  isLine: true,  titleWeight: 700, numWeight: 700, labelWeight: 500, msgWeight: 600, subWeight: 400 },
+  'line-outline':  { bg: '#f8f8f6', titleColor: '#1a1a18', boxBg: '#1a1a18', numColor: '#1a1a18', labelColor: '#a0a09a', msgColor: '#e03e3e', subColor: '#8a8a80', boxRadius: 4, boxStyle: 'outline', colonVisible: true,  isLine: true,  titleWeight: 700, numWeight: 700, labelWeight: 500, msgWeight: 600, subWeight: 400 },
+  'line-flat':     { bg: '#ffffff', titleColor: '#1a1a18', boxBg: '#1a1a18', numColor: '#1a1a18', labelColor: '#a0a09a', msgColor: '#e03e3e', subColor: '#8a8a80', boxRadius: 0, boxStyle: 'flat',    colonVisible: false, isLine: true,  titleWeight: 800, numWeight: 800, labelWeight: 500, msgWeight: 600, subWeight: 400 }
+};
+
+let currentPreset = 'standard';
+
+function applyPreset(key) {
+  if (!PRESETS[key]) return;
+  currentPreset = key;
+  const p = PRESETS[key];
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('preset-' + key).classList.add('active');
+  setColorField('opt-bg',          'opt-bg-t',          p.bg);
+  setColorField('opt-color-title', 'opt-color-title-t', p.titleColor);
+  setColorField('opt-box-bg',      'opt-box-bg-t',      p.boxBg);
+  setColorField('opt-num-color',   'opt-num-color-t',   p.numColor);
+  setColorField('opt-label-color', 'opt-label-color-t', p.labelColor);
+  setColorField('opt-msg-color',   'opt-msg-color-t',   p.msgColor);
+  setColorField('opt-sub-color',   'opt-sub-color-t',   p.subColor);
+  setWeight('opt-title-weight', 'opt-title-weight-val', p.titleWeight);
+  setWeight('opt-num-weight',   'opt-num-weight-val',   p.numWeight);
+  setWeight('opt-label-weight', 'opt-label-weight-val', p.labelWeight);
+  setWeight('opt-msg-weight',   'opt-msg-weight-val',   p.msgWeight);
+  setWeight('opt-sub-weight',   'opt-sub-weight-val',   p.subWeight);
+  // 카드 모서리 둥글기: 프리셋의 boxRadius로 슬라이더 초기화
+  document.getElementById('opt-card-radius').value = p.boxRadius;
+  document.getElementById('opt-card-radius-val').textContent = p.boxRadius + 'px';
+  updateSpacingLabel(p.isLine);
+  render();
+}
+
+function updateSpacingLabel(isLine) {
+  const el = document.getElementById('spacing-hint-inline');
+  if (el) el.textContent = '타이틀/타이머/보조문구 간격';
+}
+
+function buildWidgetHtml() {
+  const p          = PRESETS[currentPreset] || PRESETS.standard;
+  const dateStr    = document.getElementById('opt-date').value;
+  const title      = document.getElementById('opt-title').value;
+  const subtext    = document.getElementById('opt-subtext').value;
+  const useSubtext = document.getElementById('toggle-subtext').checked;
+  const useMsg     = document.getElementById('opt-use-msg').checked;
+  const msg        = document.getElementById('opt-msg').value;
+  const bg         = document.getElementById('opt-bg-t').value;
+  const colTitle   = document.getElementById('opt-color-title-t').value;
+  const boxBgVal   = document.getElementById('opt-box-bg-t').value;
+  const numColor   = document.getElementById('opt-num-color-t').value;
+  const labelColor = document.getElementById('opt-label-color-t').value;
+  const msgColor   = document.getElementById('opt-msg-color-t').value;
+  const subColor   = document.getElementById('opt-sub-color-t').value;
+  const szTitleN   = parseInt(document.getElementById('opt-title-size').value)  || 16;
+  const szSubN     = parseInt(document.getElementById('opt-sub-size').value)    || 13;
+  const szNumN     = parseInt(document.getElementById('opt-num-size').value)    || 32;
+  const szLabelN   = parseInt(document.getElementById('opt-label-size').value)  || 11;
+  const szMsgN     = parseInt(document.getElementById('opt-msg-size').value)    || 16;
+  const wTitle     = document.getElementById('opt-title-weight').value;
+  const wSub       = document.getElementById('opt-sub-weight').value;
+  const wNum       = document.getElementById('opt-num-weight').value;
+  const wLabel     = document.getElementById('opt-label-weight').value;
+  const wMsg       = document.getElementById('opt-msg-weight').value;
+  const isKor      = document.getElementById('opt-korean').checked;
+  // 요소 간격 (비라인=세로, 라인=가로)
+  const spacingPx  = parseInt(document.getElementById('opt-spacing').value) || 16;
+  // 카드 간격 (일·시·분·초 사이 gap)
+  const cardGapPx      = parseInt(document.getElementById('opt-card-gap').value) || 10;
+  const widgetRadiusPx = parseInt(document.getElementById('opt-widget-radius').value) ?? 12;
+  const cardRadiusPx   = parseInt(document.getElementById('opt-card-radius').value)   ?? 8;
+
+  let boxBgCss, boxBorderCss;
+  if      (p.boxStyle === 'outline') { boxBgCss = 'transparent'; boxBorderCss = `border: 1.5px solid ${boxBgVal};`; }
+  else if (p.boxStyle === 'flat')    { boxBgCss = 'transparent'; boxBorderCss = ''; }
+  else                               { boxBgCss = boxBgVal;       boxBorderCss = ''; }
+
+  const colonHtml = p.colonVisible ? `<div class="colon">:</div>` : `<div style="width:4px;"></div>`;
+  const dLabel = isKor ? ['일','시','분','초'] : ['D','H','M','S'];
+
+  // 비라인형 세로 간격
+  const vGap = p.isLine ? 0 : spacingPx;
+
+  let gridHtml = '';
+  if (p.isLine) {
+    // 라인형: spacingPx = 타이틀-타이머-보조문구 사이 가로 gap
+    // ※ grid → flex 전환: grid의 경우 1fr 셀이 남은 공간을 차지하여
+    //   gap 조절이 시각적으로 반영되지 않는 문제가 있음.
+    //   flex + gap 으로 전환하면 요소 간격이 gap에 직접 반영됨.
+    const sep = p.colonVisible
+      ? `<span class="line-sep">:</span>`
+      : `<span></span>`;
+
+    const timerInner = (p.boxStyle === 'flat')
+      ? `<div class="line-flat-grid" style="gap:${cardGapPx}px;">
+          <div class="flat-unit"><span class="num" id="d-day">00</span><span class="label">${dLabel[0]}</span></div><span class="line-flat-sep">:</span>
+          <div class="flat-unit"><span class="num" id="d-hour">00</span><span class="label">${dLabel[1]}</span></div><span class="line-flat-sep">:</span>
+          <div class="flat-unit"><span class="num" id="d-min">00</span><span class="label">${dLabel[2]}</span></div><span class="line-flat-sep">:</span>
+          <div class="flat-unit"><span class="num" id="d-sec">00</span><span class="label">${dLabel[3]}</span></div>
+        </div>`
+      : `<div class="line-timer" style="gap:${cardGapPx}px;">
+          <div class="line-unit" style="${boxBorderCss} background:${boxBgCss};"><span class="num" id="d-day">00</span><span class="label">${dLabel[0]}</span></div>${sep}
+          <div class="line-unit" style="${boxBorderCss} background:${boxBgCss};"><span class="num" id="d-hour">00</span><span class="label">${dLabel[1]}</span></div>${sep}
+          <div class="line-unit" style="${boxBorderCss} background:${boxBgCss};"><span class="num" id="d-min">00</span><span class="label">${dLabel[2]}</span></div>${sep}
+          <div class="line-unit" style="${boxBorderCss} background:${boxBgCss};"><span class="num" id="d-sec">00</span><span class="label">${dLabel[3]}</span></div>
+        </div>`;
+
+    // flex-wrap: wrap → 모바일에서 자동 줄바꿈
+    gridHtml = `<div class="line-grid" style="gap:${spacingPx}px;">
+      <div class="line-header"><span class="title">${title}</span></div>
+      ${timerInner}
+      ${useSubtext ? `<div class="line-footer"><span class="subtext">${subtext}</span></div>` : ''}
+    </div>`;
+
+  } else if (p.boxStyle === 'flat') {
+    // 비라인 플랫: cardGapPx = flat-grid 내부 단위 간 gap
+    gridHtml = `<div class="flat-grid" style="gap:${cardGapPx}px;">
+        <div class="flat-unit"><span class="num" id="d-day">00</span><span class="label">${dLabel[0]}</span></div><span class="flat-sep">:</span>
+        <div class="flat-unit"><span class="num" id="d-hour">00</span><span class="label">${dLabel[1]}</span></div><span class="flat-sep">:</span>
+        <div class="flat-unit"><span class="num" id="d-min">00</span><span class="label">${dLabel[2]}</span></div><span class="flat-sep">:</span>
+        <div class="flat-unit"><span class="num" id="d-sec">00</span><span class="label">${dLabel[3]}</span></div>
+      </div>`;
+  } else {
+    // 카드형: cardGapPx = box-grid 내부 gap
+    gridHtml = `<div class="box-grid" style="gap:${cardGapPx}px;">
+        <div class="box" style="${boxBorderCss} background:${boxBgCss};"><div class="num" id="d-day">00</div><div class="label">${isKor?'일':'DAYS'}</div></div>${colonHtml}
+        <div class="box" style="${boxBorderCss} background:${boxBgCss};"><div class="num" id="d-hour">00</div><div class="label">${isKor?'시':'HRS'}</div></div>${colonHtml}
+        <div class="box" style="${boxBorderCss} background:${boxBgCss};"><div class="num" id="d-min">00</div><div class="label">${isKor?'분':'MIN'}</div></div>${colonHtml}
+        <div class="box" style="${boxBorderCss} background:${boxBgCss};"><div class="num" id="d-sec">00</div><div class="label">${isKor?'초':'SEC'}</div></div>
+      </div>`;
+  }
+
+  /* ─────────────────────────────────────────────────────
+   * 퍼블 세로 정렬 지원 핵심:
+   *   - body: display:flex + flex-direction:column
+   *           + justify-content:center + align-items:center
+   *           + min-height:100% (iframe height에 맞춤)
+   *   - html, body: height:100%  ← 이것이 없으면 퍼블의
+   *     "위/중간/아래" 정렬 옵션이 먹히지 않음
+   *   - .widget: flex-grow:1 제거, margin:auto 사용 X
+   *     → 퍼블이 iframe 바깥에서 vertical-align을 조정할 수
+   *       있도록 body가 flex container가 되어야 함
+   * ───────────────────────────────────────────────────── */
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: transparent;
+  font-family: 'Pretendard Variable','Pretendard',-apple-system,sans-serif;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.widget {
+  background: ${bg};
+  padding: 24px;
+  border-radius: ${widgetRadiusPx}px;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.title   { font-size: ${szTitleN}px; font-weight: ${wTitle}; color: ${colTitle}; margin-bottom: ${vGap}px; width: 100%; word-break: break-all; }
+.subtext { font-size: ${szSubN}px;   color: ${subColor}; margin-bottom: ${vGap}px; font-weight: ${wSub}; width: 100%; word-break: break-all; }
+.box-grid  { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: center; }
+.box { min-width: ${Math.round(szNumN * 1.8)}px; padding: 12px 10px; border-radius: ${cardRadiusPx}px; display: flex; flex-direction: column; align-items: center; }
+.num   { font-size: ${szNumN}px;   font-weight: ${wNum};   color: ${numColor};   line-height: 1; font-variant-numeric: tabular-nums; }
+.label { font-size: ${szLabelN}px; font-weight: ${wLabel}; color: ${labelColor}; text-transform: uppercase; margin-top: 6px; letter-spacing: 0.05em; }
+.colon { font-size: ${Math.round(szNumN * 0.7)}px; font-weight: 700; color: ${colTitle}; opacity: 0.3; align-self: center; margin-top: -${Math.round(szLabelN * 2)}px; }
+.flat-grid  { display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center; }
+.flat-unit  { display: inline-flex; align-items: baseline; gap: 2px; }
+.flat-sep   { font-size: ${Math.round(szNumN * 0.65)}px; font-weight: 700; color: ${colTitle}; opacity: 0.2; }
+/* 라인형: flex로 전환하여 gap이 타이틀-타이머-보조문구 사이 간격에 직접 반영 */
+.line-grid   { display: flex; flex-direction: row; align-items: center; justify-content: center; flex-wrap: wrap; text-align: center; width: 100%; }
+.line-header { text-align: center; flex-shrink: 0; }
+.line-header .title   { margin-bottom: 0; text-align: center; white-space: nowrap; }
+.line-footer { text-align: center; flex-shrink: 0; }
+.line-footer .subtext { margin-bottom: 0; text-align: center; white-space: nowrap; }
+.line-timer  { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; flex-shrink: 0; }
+.line-unit   { min-width: ${Math.round(szNumN * 1.5)}px; padding: 8px 10px; border-radius: ${cardRadiusPx}px; display: inline-flex; align-items: baseline; justify-content: center; gap: 3px; }
+.line-unit .label { margin-top: 0; }
+.line-sep { font-size: ${Math.round(szNumN * 0.7)}px; font-weight: 700; color: ${colTitle}; opacity: 0.3; }
+/* 라인 플랫 전용: 단위 간격 타이트 */
+.line-flat-grid { display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center; }
+.line-flat-sep  { font-size: ${Math.round(szNumN * 0.65)}px; font-weight: 700; color: ${colTitle}; opacity: 0.2; padding: 0 2px; }
+/* 마감문구 */
+#expire-msg { display: ${useMsg ? 'block' : 'none'}; visibility: hidden; font-size: ${szMsgN}px; font-weight: ${wMsg}; color: ${msgColor}; margin-top: ${vGap || 16}px; line-height: 1.6; width: 100%; word-break: break-all; }
+@media (max-width: 600px) {
+  .widget { padding: 16px; }
+  .title   { font-size: ${Math.round(szTitleN*0.88)}px; }
+  .subtext { font-size: ${Math.round(szSubN*0.88)}px; }
+  .box     { min-width: ${Math.round(szNumN*1.8*0.88)}px; }
+  .num     { font-size: ${Math.round(szNumN*0.88)}px; }
+  .line-grid { flex-direction: column; gap: 10px; }
+  .line-footer { text-align: center; }
+  #expire-msg { font-size: ${Math.round(szMsgN*0.88)}px; }
+}
+</style>
+</head>
+<body>
+<div class="widget">
+  ${!p.isLine ? `<div class="title">${title}</div>` : ''}
+  ${!p.isLine && useSubtext ? `<div class="subtext">${subtext}</div>` : ''}
+  ${gridHtml}
+  <div id="expire-msg">${msg}</div>
+</div>
+<script>
+const targetDate = new Date("${dateStr}").getTime();
+function update() {
+  var now  = new Date().getTime();
+  var diff = targetDate - now;
+  var msgEl = document.getElementById('expire-msg');
+  if (isNaN(targetDate) || diff <= 0) {
+    ['d-day','d-hour','d-min','d-sec'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.textContent = '00';
+    });
+    if (msgEl) msgEl.style.visibility = 'visible';
+    return;
+  }
+  var d = Math.floor(diff / 86400000);
+  var h = Math.floor((diff % 86400000) / 3600000);
+  var m = Math.floor((diff % 3600000)  / 60000);
+  var s = Math.floor((diff % 60000)    / 1000);
+  document.getElementById('d-day').textContent  = String(d).padStart(2,'0');
+  document.getElementById('d-hour').textContent = String(h).padStart(2,'0');
+  document.getElementById('d-min').textContent  = String(m).padStart(2,'0');
+  document.getElementById('d-sec').textContent  = String(s).padStart(2,'0');
+  if (msgEl) msgEl.style.visibility = 'hidden';
+}
+update(); setInterval(update, 1000);
+<\/script>
+</body>
+</html>`;
+}
+
+function render() {
+  const p = PRESETS[currentPreset] || PRESETS.standard;
+  updateSpacingLabel(p.isLine);
+
+  const html = buildWidgetHtml();
+  const area = document.getElementById('preview-area');
+  let iframe = area.querySelector('iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    // 미리보기 iframe: 100% 채우기
+    iframe.style.cssText = 'width:100%; height:100%; border:none; display:block;';
+    area.appendChild(iframe);
+  }
+
+  // 미리보기: 마감문구 강제 노출
+  const isMsgOn = document.getElementById('opt-use-msg').checked;
+  let finalHtml = html;
+  if (isMsgOn) {
+    finalHtml = html.replace('visibility: hidden;', 'visibility: visible !important;');
+  }
+
+  const blob = new Blob([finalHtml], { type: 'text/html' });
+  iframe.src = URL.createObjectURL(blob);
+  updateCode();
+}
+
+function updateCode() {
+  const html = buildWidgetHtml();
+
+  // 미리보기 iframe에서 실제 위젯 높이 읽기
+  const previewIframe = document.querySelector('#preview-area iframe');
+  let widgetH = 300;
+  try {
+    if (previewIframe && previewIframe.contentDocument) {
+      widgetH = previewIframe.contentDocument.body.scrollHeight || 300;
+    }
+  } catch(e) {}
+
+  const encoded = btoa(unescape(encodeURIComponent(html)));
+  const code = `<iframe src="data:text/html;base64,${encoded}" frameborder="0" scrolling="no" style="border:none; overflow:hidden; width:100%; display:block; height:${widgetH}px;"></iframe>`;
+  document.getElementById('code-output').textContent = code;
+}
+
+function copyCode() {
+  const code = document.getElementById('code-output').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const el = document.getElementById('copy-status');
+    el.textContent = '✓ 코드가 클립보드에 복사되었습니다';
+    el.style.opacity = '1';
+    setTimeout(() => { el.style.opacity = '0'; }, 2500);
+  });
+}
+
+updateSpacingLabel(false);
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — 롤링 텍스트 공지바</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
+    --text: #1a1a18; --text2: #6b6b66; --text3: #9a9a94;
+    --accent: #1a1a18; --accent-fg: #ffffff;
+    --radius: 10px; --radius-sm: 6px;
+    --green: #1a7a4a;
+    --red: #c0392b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110; --surface: #1c1c1a; --surface2: #252523;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --text: #f0efe9; --text2: #a0a09a; --text3: #555550;
+      --accent: #f0efe9; --accent-fg: #111110;
+      --green: #4aba7a; --red: #e05c5c;
+    }
+  }
+
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px 80px;
+  }
+
+  .layout {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start;
+  }
+
+  .page-header { grid-column: 1 / -1; margin-bottom: 8px; }
+  .logo-area { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .logo { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+  .provider { font-size: 10px; color: var(--text3); opacity: 0.8; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 5px; }
+  .subtitle { font-size: 14px; color: var(--text2); }
+
+  .card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card-title {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text3); margin-bottom: 16px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+
+  input[type="text"], input[type="color"], input[type="range"], select, textarea {
+    width: 100%; padding: 8px 11px; font-size: 13px; font-family: inherit;
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 6px; padding: 0;
+    background: var(--surface2); border: 0.5px solid var(--border); border-radius: 3px; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text); border: 0.5px solid var(--border); transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+  input:focus, textarea:focus, select:focus { border-color: var(--border2); }
+  textarea { resize: vertical; line-height: 1.6; }
+
+  .color-field-wrap { display: grid; grid-template-columns: 40px 1fr; gap: 8px; }
+  input[type="color"] { padding: 0; height: 34px; cursor: pointer; border-radius: var(--radius-sm); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  button {
+    display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px;
+    font-size: 13px; font-family: inherit; font-weight: 500;
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    background: transparent; color: var(--text); cursor: pointer;
+    transition: background 0.12s, opacity 0.12s; white-space: nowrap;
+  }
+  button:hover { background: var(--surface2); }
+  button:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { opacity: 0.85; background: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { color: var(--red); border-color: rgba(192,57,43,0.3); }
+  .btn-danger:hover { background: rgba(192,57,43,0.06); }
+
+  .item-edit {
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; position: relative;
+  }
+  .item-edit:last-child { margin-bottom: 0; }
+  .item-edit-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .item-num { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; }
+  .item-actions { display: flex; gap: 4px; }
+
+  .right-panel { position: sticky; top: 24px; }
+
+  .preview-frame {
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+.preview-note { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; padding: 10px 0 14px; }
+  .preview-label {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 0.5px solid var(--border);
+  }
+  .preview-label span { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+
+  .preview-area-wrap { padding: 16px; background: #fdfdfd; display: flex; flex-direction: column; gap: 16px; }
+  .preview-section { width: 100%; }
+  .preview-section-title { font-size: 11px; font-weight: 500; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; }
+
+  #preview-pc { width: 100%; background: #ffffff; }
+  #preview-mobile { width: 100%; max-width: 375px; margin: 0 auto; background: #ffffff; }
+
+  .code-box {
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px; font-family: monospace;
+    font-size: 12px; color: var(--text2); word-break: break-all; line-height: 1.6;
+    max-height: 120px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap;
+  }
+  .code-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .status-msg { font-size: 12px; font-weight: 400; color: var(--green); min-height: 20px; margin-top: 6px; }
+  .divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .right-panel { position: static; }
+    body { padding: 20px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="page-header">
+    <div class="logo-area">
+      <div class="logo">위젯 갤러리</div>
+      <div class="provider">(주)패스트라이프 제공</div>
+    </div>
+    <h1>롤링 텍스트 공지바</h1>
+    <p class="subtitle">슬라이드 되며 전환되는 심플한 공지바를 제작해보세요.</p>
+  </div>
+
+  <div class="left-panel">
+
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">공지 문구 목록</div>
+        <button class="btn-sm" onclick="addItem()">+ 항목 추가</button>
+      </div>
+      <div id="item-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">스타일 설정</div>
+
+      <div class="row2">
+        <div class="field">
+          <label>배경 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-bg-color" value="#000000" oninput="syncColor('opt-bg-color','opt-bg-text')" />
+            <input type="text" id="opt-bg-text" value="#000000" oninput="syncColor('opt-bg-text','opt-bg-color')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>텍스트 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-text-color" value="#ffffff" oninput="syncColor('opt-text-color','opt-text-text')" />
+            <input type="text" id="opt-text-text" value="#ffffff" oninput="syncColor('opt-text-text','opt-text-color')" />
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>폰트 크기 (px)</label>
+        <input type="text" id="opt-font-size" value="18" oninput="render()" />
+        <p class="hint">모바일 환경에서 폰트크기는 반응형으로 자동 조절됩니다</p>
+      </div>
+
+      <div class="field">
+        <label>폰트 굵기 : <span id="weight-val" style="font-weight:600;">400</span></label>
+        <input type="range" id="opt-font-weight" min="100" max="900" step="100" value="400"
+          oninput="document.getElementById('weight-val').innerText = this.value; render();" />
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row2">
+        <div class="field">
+          <label>배너 높이 PC (px)</label>
+          <input type="text" id="opt-height" value="45" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>배너 높이 모바일 (px)</label>
+          <input type="text" id="opt-height-mobile" value="70" oninput="render()" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>롤링 대기 시간 (초)</label>
+          <input type="text" id="opt-duration" value="3" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>모서리 둥글기 (px)</label>
+          <input type="text" id="opt-radius" value="0" oninput="render()" placeholder="예: 0 또는 10" />
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="right-panel">
+
+    <div class="preview-frame">
+      <div class="preview-label">
+        <span>미리보기</span>
+      </div>
+      <div class="preview-area-wrap" id="preview-wrap">
+        <div class="preview-section">
+          <div class="preview-section-title">PC 환경</div>
+          <iframe id="preview-pc" frameborder="0" scrolling="no" style="border:none; display:block;"></iframe>
+        </div>
+        <div class="preview-section">
+          <div class="preview-section-title">모바일 환경 (가로 375px 고정)</div>
+          <iframe id="preview-mobile" frameborder="0" scrolling="no" style="border:none; display:block;"></iframe>
+        </div>
+      </div>
+    </div>
+    <p class="preview-note">미리보기 화면은 참고용입니다. 실제 화면은 코드를 적용하여 확인해주세요.</p>
+
+    <div class="card">
+      <div class="card-title">퍼블 코드블럭에 붙여넣기</div>
+      <div class="code-header">
+        <span style="font-size:12px; color:var(--text2);">생성된 iframe 코드</span>
+        <button class="btn-sm btn-primary" onclick="copyCode()">코드 복사</button>
+      </div>
+      <div class="code-box" id="code-output"></div>
+      <div class="status-msg" id="copy-status"></div>
+      <div class="divider"></div>
+      <p style="font-size:12px; color:var(--text2); line-height:1.7;">
+        1. 위 코드를 복사하세요<br>
+        2. 퍼블 편집기에서 코드블럭을 추가하세요<br>
+        3. 코드블럭 안에 붙여넣으세요
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+let items = [
+  { text: '📣 공지사항 첫 번째 메시지입니다.' },
+  { text: '✨ 두 번째 롤링 공지 메시지 영역입니다.' },
+  { text: '🚀 마지막 세 번째 이벤트 공지 내용입니다.' }
+];
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function syncColor(changedId, targetId) {
+  document.getElementById(targetId).value = document.getElementById(changedId).value;
+  render();
+}
+
+function renderEditList() {
+  const list = document.getElementById('item-list');
+  list.innerHTML = '';
+  items.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'item-edit';
+    div.innerHTML = `
+      <div class="item-edit-header">
+        <span class="item-num">메시지 ${i + 1}</span>
+        <div class="item-actions">
+          ${i > 0 ? `<button class="btn-sm btn-ghost" onclick="moveItem(${i},-1)" title="위로">↑</button>` : ''}
+          ${i < items.length - 1 ? `<button class="btn-sm btn-ghost" onclick="moveItem(${i},1)" title="아래로">↓</button>` : ''}
+          ${items.length > 1 ? `<button class="btn-sm btn-danger" onclick="removeItem(${i})">삭제</button>` : ''}
+        </div>
+      </div>
+      <div class="field">
+        <input type="text" value="${escHtml(item.text)}" oninput="items[${i}].text=this.value; render()" placeholder="공지 문구를 입력하세요" />
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addItem() { items.push({ text: '새로운 공지 문구입니다.' }); renderEditList(); render(); }
+function removeItem(i) { items.splice(i, 1); renderEditList(); render(); }
+function moveItem(i, dir) { const j = i + dir; [items[i], items[j]] = [items[j], items[i]]; renderEditList(); render(); }
+
+function buildWidgetHtml(fixedHeightNum, fixedFontSize) {
+  const bgColor = document.getElementById('opt-bg-text').value;
+  const textColor = document.getElementById('opt-text-text').value;
+  const fontWeight = document.getElementById('opt-font-weight').value;
+  const durationNum = parseFloat(document.getElementById('opt-duration').value) || 3;
+  const radius = (parseInt(document.getElementById('opt-radius').value) || 0) + 'px';
+  const n = items.length;
+  const stayRatio = 0.75;
+  const height = fixedHeightNum + 'px';
+  const fontSize = fixedFontSize + 'px';
+
+  const itemsHtml = items.map(item => `
+    <div class="slide-item">
+      <div class="text-content">${escHtml(item.text)}</div>
+    </div>
+  `).join('') + `
+    <div class="slide-item">
+      <div class="text-content">${escHtml(items[0].text)}</div>
+    </div>
+  `;
+
+  let keyframeSteps = '';
+  for (let i = 0; i < n; i++) {
+    const start = (i / n) * 100;
+    const stayEnd = start + (100 / n) * stayRatio;
+    const moveEnd = (i + 1) / n * 100;
+    keyframeSteps += `
+      ${start.toFixed(2)}% { transform: translateY(-${i * fixedHeightNum}px); }
+      ${stayEnd.toFixed(2)}% { transform: translateY(-${i * fixedHeightNum}px); }
+      ${moveEnd.toFixed(2)}% { transform: translateY(-${(i + 1) * fixedHeightNum}px); }`;
+  }
+  keyframeSteps += `
+      100% { transform: translateY(-${n * fixedHeightNum}px); }`;
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: transparent; font-family: 'Pretendard Variable','Pretendard',-apple-system,sans-serif; overflow: hidden; margin:0; }
+  .notice-container {
+    width: 100%; height: ${height}; background-color: ${bgColor}; color: ${textColor};
+    font-weight: ${fontWeight}; position: relative; overflow: hidden;
+    text-align: center; font-size: ${fontSize}; border-radius: ${radius};
+  }
+  .slide-wrap { position: absolute; width: 100%; }
+  .slide-item {
+    width: 100%; height: ${height};
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px 15px; word-break: keep-all; overflow-wrap: break-word; box-sizing: border-box;
+  }
+  .text-content { line-height: 1.4; text-align: center; }
+  @keyframes rollVertical {${keyframeSteps}
+  }
+</style>
+</head>
+<body>
+  <div class="notice-container">
+    <div class="slide-wrap">
+      ${itemsHtml}
+    </div>
+  </div>
+<script>
+  var wrap = document.querySelector('.slide-wrap');
+  var container = document.querySelector('.notice-container');
+  var n = ${n};
+  var dur = ${n * durationNum};
+  var stayR = ${stayRatio};
+  var itemH = ${fixedHeightNum};
+
+  function buildKeyframes(h) {
+    var steps = '';
+    for (var i = 0; i < n; i++) {
+      var s = (i / n * 100).toFixed(2);
+      var se = (i / n * 100 + 100 / n * stayR).toFixed(2);
+      var me = ((i + 1) / n * 100).toFixed(2);
+      steps += s + '% { transform: translateY(-' + (i * h) + 'px); }';
+      steps += se + '% { transform: translateY(-' + (i * h) + 'px); }';
+      steps += me + '% { transform: translateY(-' + ((i + 1) * h) + 'px); }';
+    }
+    steps += '100% { transform: translateY(-' + (n * h) + 'px); }';
+    return steps;
+  }
+
+  function startAnimation() {
+    container.style.height = itemH + 'px';
+    var items = document.querySelectorAll('.slide-item');
+    items.forEach(function(el) { el.style.height = itemH + 'px'; });
+    var styleEl = document.getElementById('dynamic-kf');
+    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'dynamic-kf'; document.head.appendChild(styleEl); }
+    styleEl.textContent = '@keyframes rollVertical { ' + buildKeyframes(itemH) + ' }';
+    wrap.style.animation = 'none';
+    wrap.offsetHeight;
+    wrap.style.animation = 'rollVertical ' + dur + 's infinite';
+    wrap.style.animationTimingFunction = 'ease-in-out';
+  }
+
+  startAnimation();
+
+  wrap.addEventListener('animationiteration', function() {
+    wrap.style.animation = 'none';
+    wrap.style.transform = 'translateY(0)';
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        startAnimation();
+      });
+    });
+  });
+<\/script>
+</body>
+</html>`;
+}
+
+function render() {
+  const heightNum = parseInt(document.getElementById('opt-height').value) || 45;
+  const heightMobileNum = parseInt(document.getElementById('opt-height-mobile').value) || 70;
+  const fontSizeNum = parseInt(document.getElementById('opt-font-size').value) || 18;
+  const fontSizeMobileNum = Math.round(fontSizeNum * 0.88);
+
+  // PC 미리보기
+  const pcHtml = buildWidgetHtml(heightNum, fontSizeNum);
+  const pcIframe = document.getElementById('preview-pc');
+  pcIframe.style.height = heightNum + 'px';
+  pcIframe.style.width = '100%';
+  pcIframe.src = URL.createObjectURL(new Blob([pcHtml], { type: 'text/html' }));
+
+  // 모바일 미리보기
+  const mobileHtml = buildWidgetHtml(heightMobileNum, fontSizeMobileNum);
+  const mobileIframe = document.getElementById('preview-mobile');
+  mobileIframe.style.height = heightMobileNum + 'px';
+  mobileIframe.style.width = '100%';
+  mobileIframe.src = URL.createObjectURL(new Blob([mobileHtml], { type: 'text/html' }));
+
+  updateCode();
+}
+
+function updateCode() {
+  const heightNum = parseInt(document.getElementById('opt-height').value) || 45;
+  const heightMobileNum = parseInt(document.getElementById('opt-height-mobile').value) || 70;
+  const fontSizeNum = parseInt(document.getElementById('opt-font-size').value) || 18;
+  const fontSizeMobileNum = Math.round(fontSizeNum * 0.88);
+
+  const pcHtml = buildWidgetHtml(heightNum, fontSizeNum);
+
+  // 최종 코드에 들어갈 CSS 및 JS 수정
+  const finalHtml = pcHtml.replace(
+    '@keyframes rollVertical',
+    `@media (max-width: 768px) {
+      .notice-container { height: ${heightMobileNum}px !important; font-size: ${fontSizeMobileNum}px !important; }
+      .slide-item { height: ${heightMobileNum}px !important; }
+    }
+    @keyframes rollVertical`
+  ).replace(
+    'var itemH = ' + heightNum + ';',
+    `var itemH = window.innerWidth <= 768 ? ${heightMobileNum} : ${heightNum};`
+  ).replace(
+    'startAnimation();',
+    `itemH = window.innerWidth <= 768 ? ${heightMobileNum} : ${heightNum};
+  startAnimation();
+  window.addEventListener('resize', function() {
+    itemH = window.innerWidth <= 768 ? ${heightMobileNum} : ${heightNum};
+    startAnimation();
+  });`
+  );
+
+  const encoded = btoa(unescape(encodeURIComponent(finalHtml)));
+  
+  // 핵심 수정: iframe 태그 자체에 반응형 높이 스타일 적용
+  const code = `<iframe src="data:text/html;base64,${encoded}" width="100%" frameborder="0" scrolling="no" style="border:none; width:100%; display:block; height:${heightNum}px; min-height:${heightNum}px;"></iframe>
+<style>
+  @media (max-width: 768px) {
+    iframe[src^="data:text/html;base64"] { height: ${heightMobileNum}px !important; min-height: ${heightMobileNum}px !important; }
+  }
+</style>`;
+
+  document.getElementById('code-output').textContent = code;
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('code-output').textContent).then(() => {
+    const el = document.getElementById('copy-status');
+    el.textContent = '✓ 코드가 클립보드에 복사되었습니다';
+    setTimeout(() => el.textContent = '', 2500);
+  });
+}
+
+renderEditList();
+render();
+</script>
+</body>
+</html>

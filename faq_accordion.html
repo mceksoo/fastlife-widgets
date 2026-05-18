@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — FAQ 아코디언</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.2);
+    --text: #1a1a18;
+    --text2: #6b6b66;
+    --text3: #9a9a94;
+    --accent: #1a1a18;
+    --accent-fg: #ffffff;
+    --red: #c0392b;
+    --green: #1a7a4a;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --surface2: #252523;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.2);
+      --text: #f0efe9;
+      --text2: #a0a09a;
+      --text3: #555550;
+      --accent: #f0efe9;
+      --accent-fg: #111110;
+      --green: #4aba7a;
+      --red: #e05c5c;
+    }
+  }
+
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  .layout {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .page-header { grid-column: 1 / -1; margin-bottom: 8px; }
+  .logo-area { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .logo { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+  .provider { font-size: 10px; color: var(--text3); opacity: 0.8; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 5px; }
+  .subtitle { font-size: 14px; color: var(--text2); }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 14px;
+  }
+
+  .card:last-child { margin-bottom: 0; }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 5px;
+  }
+
+  input[type="text"],
+  input[type="color"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 8px 11px;
+    font-size: 13px;
+    font-family: inherit;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, textarea:focus, select:focus { border-color: var(--border2); }
+  textarea { resize: vertical; line-height: 1.6; }
+
+  .color-field-wrap {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 8px;
+  }
+
+  input[type="color"] {
+    padding: 0;
+    height: 34px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.12s, opacity 0.12s;
+    white-space: nowrap;
+  }
+
+  button:hover { background: var(--surface2); }
+  button:active { transform: scale(0.98); }
+
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { opacity: 0.85; background: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { color: var(--red); border-color: rgba(192,57,43,0.3); }
+  .btn-danger:hover { background: rgba(192,57,43,0.06); }
+
+  .faq-item-edit {
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .faq-item-edit:last-child { margin-bottom: 0; }
+
+  .faq-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .faq-num {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    letter-spacing: 0.04em;
+  }
+
+  .faq-item-actions { display: flex; gap: 4px; }
+
+  .right-panel { position: sticky; top: 24px; }
+
+.preview-frame {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.preview-note { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; padding: 6px 0 14px; }
+
+  .preview-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .preview-label span {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  #preview-area {
+    height: 48vh;     
+    overflow-y: auto; 
+    transition: background 0.2s;
+  }
+
+  .code-box {
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--text2);
+    word-break: break-all;
+    line-height: 1.6;
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .status-msg {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--green);
+    min-height: 20px;
+    margin-top: 6px;
+  }
+
+  .divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .slider-row input[type="range"] { flex: 1; }
+  .slider-val {
+    font-size: 12px;
+    color: var(--text2);
+    min-width: 32px;
+    text-align: right;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+
+  .checkbox-row input {
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+  }
+
+  .checkbox-row span {
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .right-panel { position: static; }
+    body { padding: 20px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="page-header">
+    <div class="logo-area">
+      <div class="logo">위젯 갤러리</div>
+      <div class="provider">(주)패스트라이프 제공</div>
+    </div>
+    <h1>FAQ 아코디언</h1>
+    <p class="subtitle">원하는 질문과 답변을 작성한 뒤 나만의 스타일로 커스텀해보세요!</p>
+  </div>
+
+  <div class="left-panel">
+
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">FAQ 항목</div>
+        <button class="btn-sm" onclick="addFaq()">+ 항목 추가</button>
+      </div>
+      <div id="faq-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">기본 스타일 설정</div>
+
+      <div class="row2">
+        <div class="field">
+          <label>강조 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-accent-color" value="#1a1a18" oninput="syncColor('opt-accent-color', 'opt-accent-text')" />
+            <input type="text" id="opt-accent-text" value="#1a1a18" oninput="syncColor('opt-accent-text', 'opt-accent-color')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>배경 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-bg-color" value="#ffffff" oninput="syncColor('opt-bg-color', 'opt-bg-text')" />
+            <input type="text" id="opt-bg-text" value="#ffffff" oninput="syncColor('opt-bg-text', 'opt-bg-color')" />
+          </div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>질문 텍스트 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-qtext-color" value="#1a1a18" oninput="syncColor('opt-qtext-color', 'opt-qtext-text')" />
+            <input type="text" id="opt-qtext-text" value="#1a1a18" oninput="syncColor('opt-qtext-text', 'opt-qtext-color')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>답변 텍스트 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-atext-color" value="#1a1a18" oninput="syncColor('opt-atext-color', 'opt-atext-text')" />
+            <input type="text" id="opt-atext-text" value="#1a1a18" oninput="syncColor('opt-atext-text', 'opt-atext-color')" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 15px;">
+        <label class="checkbox-row">
+          <input type="checkbox" id="opt-hover-effect" onchange="render()" checked />
+          <span>제목에 마우스 호버 시 강조색 적용</span>
+        </label>
+      </div>
+
+      <div class="field" style="margin-top: 5px;">
+        <label class="checkbox-row">
+          <input type="checkbox" id="opt-active-effect" onchange="render()" checked />
+          <span>활성화 된 질문 제목에 강조색 적용</span>
+        </label>
+      </div>
+
+      <div class="field" style="margin-top: 5px;">
+        <label class="checkbox-row">
+          <input type="checkbox" id="opt-open-first" onchange="render()" checked />
+          <span>로딩 시 첫번째 답변 열어놓기</span>
+        </label>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>질문 폰트 크기 (px)</label>
+        <input type="text" id="opt-qsize" value="16" oninput="render()" />
+        <p class="hint">모바일 환경에서 폰트크기는 반응형으로 자동 조절됩니다</p>
+      </div>
+
+      <div class="field">
+        <label>질문 폰트 굵기</label>
+        <div class="slider-row">
+          <input type="range" id="opt-qweight" min="100" max="900" step="100" value="600" oninput="updateSlider('opt-qweight','opt-qweight-val',''); render()" />
+          <span class="slider-val" id="opt-qweight-val">600</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>답변 폰트 크기 (px)</label>
+        <input type="text" id="opt-asize" value="14" oninput="render()" />
+        <p class="hint">모바일 환경에서 폰트크기는 반응형으로 자동 조절됩니다</p>
+      </div>
+
+      <div class="field">
+        <label>답변 폰트 굵기</label>
+        <div class="slider-row">
+          <input type="range" id="opt-aweight" min="100" max="900" step="100" value="400" oninput="updateSlider('opt-aweight','opt-aweight-val',''); render()" />
+          <span class="slider-val" id="opt-aweight-val">400</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>항목 간격</label>
+        <div class="slider-row">
+          <input type="range" id="opt-gap" min="0" max="16" value="6" oninput="updateSlider('opt-gap','opt-gap-val','px'); render()" />
+          <span class="slider-val" id="opt-gap-val">6px</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>모서리 둥글기</label>
+        <div class="slider-row">
+          <input type="range" id="opt-radius" min="0" max="20" value="8" oninput="updateSlider('opt-radius','opt-radius-val','px'); render()" />
+          <span class="slider-val" id="opt-radius-val">8px</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>아이콘 스타일</label>
+        <select id="opt-icon" onchange="render()">
+          <option value="plus">+ / −</option>
+          <option value="arrow">▼ 화살표</option>
+          <option value="dot">● 점</option>
+          <option value="none">없음</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>애니메이션</label>
+        <select id="opt-anim" onchange="render()">
+          <option value="0.2s">부드럽게 - 매우 빠르게 (0.2s)</option>
+          <option value="0.35s">부드럽게 - 빠르게 (0.35s)</option>
+          <option value="0.45s" selected>부드럽게 - 보통 (0.45s)</option>
+          <option value="0.6s">부드럽게 - 느리게 (0.6s)</option>
+          <option value="instant">즉시</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>구분선 스타일</label>
+        <select id="opt-divider" onchange="toggleFillOption(); render();">
+          <option value="border">테두리형 (각 항목 박스)</option>
+          <option value="line" selected>라인형 (하단 구분선)</option>
+          <option value="filled">채움형 (배경색 강조)</option>
+        </select>
+      </div>
+
+      <div class="field" id="border-color-field">
+        <label id="border-color-label">구분선 색상</label>
+        <div class="color-field-wrap">
+          <input type="color" id="opt-border-color" value="#e5e5e0" oninput="syncColor('opt-border-color', 'opt-border-text')" />
+          <input type="text" id="opt-border-text" value="#e5e5e0" oninput="syncColor('opt-border-text', 'opt-border-color')" />
+        </div>
+      </div>
+
+      <div class="field" id="fill-color-field" style="display:none;">
+        <label>채움형 배경색</label>
+        <div class="color-field-wrap">
+          <input type="color" id="opt-fill-color" value="#f5f5f3" oninput="syncColor('opt-fill-color', 'opt-fill-text')" />
+          <input type="text" id="opt-fill-text" value="#f5f5f3" oninput="syncColor('opt-fill-text', 'opt-fill-color')" />
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <div class="card-title">iframe 크기 설정</div>
+      <div class="row2">
+        <div class="field">
+          <label>너비</label>
+          <select id="opt-width" onchange="updateCode()">
+            <option value="100%">100% (반응형)</option>
+            <option value="800px">800px</option>
+            <option value="700px">700px</option>
+            <option value="600px">600px</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>높이</label>
+          <select id="opt-height" onchange="updateCode()">
+            <option value="auto" selected>자동 (권장)</option>
+            <option value="400px">400px</option>
+            <option value="500px">500px</option>
+            <option value="600px">600px</option>
+            <option value="800px">800px</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">높이 자동 선택 시 콘텐츠에 맞게 자동으로 조절됩니다.</p>
+    </div>
+
+  </div>
+
+  <div class="right-panel">
+
+    <div class="preview-frame">
+      <div class="preview-label">
+        <span>미리보기</span>
+      </div>
+      <div id="preview-area"></div>
+    </div>
+ <p class="preview-note">미리보기 화면은 참고용입니다. 실제 화면은 코드를 적용하여 확인해주세요.</p>
+    <div class="card">
+      <div class="card-title">퍼블 코드블럭에 붙여넣기</div>
+
+      <div class="code-header">
+        <span style="font-size:12px; color:var(--text2);">생성된 iframe 코드</span>
+        <button class="btn-sm btn-primary" onclick="copyCode()">코드 복사</button>
+      </div>
+
+      <div class="code-box" id="code-output"></div>
+      <div class="status-msg" id="copy-status"></div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:12px; color:var(--text2); line-height:1.7;">
+        1. 위 코드를 복사하세요<br>
+        2. 퍼블 편집기에서 코드블럭을 추가하세요<br>
+        3. 코드블럭 안에 붙여넣으세요
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+let faqs = [
+  { q: '서비스 이용 방법은 어떻게 되나요?', a: '홈페이지에서 원하는 플랜을 선택하고 결제하시면 바로 이용하실 수 있습니다.' },
+  { q: '환불 정책은 어떻게 되나요?', a: '결제일로부터 7일 이내 환불 신청 시 전액 환불해드립니다.' },
+  { q: '구독은 언제든지 취소할 수 있나요?', a: '네, 언제든지 마이페이지에서 구독을 취소하실 수 있습니다. 취소 후에도 해당 기간이 끝날 때까지 이용 가능합니다.' },
+];
+
+let openIndex = 0;
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function updateSlider(inputId, valId, unit) {
+  document.getElementById(valId).textContent = document.getElementById(inputId).value + unit;
+}
+
+function syncColor(changedId, targetId) {
+  const value = document.getElementById(changedId).value;
+  document.getElementById(targetId).value = value;
+  render();
+}
+
+// 구분선 스타일에 따라 관련 색상 선택기 표시 여부 및 라벨 제어
+function toggleFillOption() {
+  const divStyle = document.getElementById('opt-divider').value;
+  const borderField = document.getElementById('border-color-field');
+  const borderLabel = document.getElementById('border-color-label');
+  const fillField = document.getElementById('fill-color-field');
+  
+  if (divStyle === 'filled') {
+    borderField.style.display = 'none';
+    fillField.style.display = 'block';
+  } else if (divStyle === 'border') {
+    borderField.style.display = 'block';
+    borderLabel.textContent = '테두리 색상';
+    fillField.style.display = 'none';
+  } else if (divStyle === 'line') {
+    borderField.style.display = 'block';
+    borderLabel.textContent = '라인 색상';
+    fillField.style.display = 'none';
+  }
+}
+
+function renderEditList() {
+  const list = document.getElementById('faq-list');
+  list.innerHTML = '';
+  faqs.forEach((faq, i) => {
+    const div = document.createElement('div');
+    div.className = 'faq-item-edit';
+    div.innerHTML = `
+      <div class="faq-item-header">
+        <span class="faq-num">Q${i + 1}</span>
+        <div class="faq-item-actions">
+          ${i > 0 ? `<button class="btn-sm btn-ghost" onclick="moveFaq(${i},-1)" title="위로">↑</button>` : ''}
+          ${i < faqs.length - 1 ? `<button class="btn-sm btn-ghost" onclick="moveFaq(${i},1)" title="아래로">↓</button>` : ''}
+          ${faqs.length > 1 ? `<button class="btn-sm btn-danger" onclick="removeFaq(${i})">삭제</button>` : ''}
+        </div>
+      </div>
+      <div class="field">
+        <label>질문</label>
+        <input type="text" value="${escHtml(faq.q)}" oninput="faqs[${i}].q=this.value; render()" placeholder="질문을 입력하세요" />
+      </div>
+      <div class="field">
+        <label>답변</label>
+        <textarea rows="2" oninput="faqs[${i}].a=this.value; render()" placeholder="답변을 입력하세요">${escHtml(faq.a)}</textarea>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addFaq() {
+  faqs.push({ q: '새 질문을 입력하세요', a: '답변을 입력하세요' });
+  renderEditList();
+  render();
+}
+
+function removeFaq(i) {
+  faqs.splice(i, 1);
+  if (openIndex >= faqs.length) openIndex = 0;
+  renderEditList();
+  render();
+}
+
+function moveFaq(i, dir) {
+  const j = i + dir;
+  [faqs[i], faqs[j]] = [faqs[j], faqs[i]];
+  renderEditList();
+  render();
+}
+
+function buildWidgetHtml() {
+  const accent = document.getElementById('opt-accent-text').value;
+  const qTextColor = document.getElementById('opt-qtext-text').value;
+  const aTextColor = document.getElementById('opt-atext-text').value;
+  const bgColor = document.getElementById('opt-bg-text').value;
+  const borderColor = document.getElementById('opt-border-text').value;
+  const fillColor = document.getElementById('opt-fill-text').value;
+  
+  const qSizeNum = parseInt(document.getElementById('opt-qsize').value) || 16;
+  const aSizeNum = parseInt(document.getElementById('opt-asize').value) || 14;
+  const qSize = qSizeNum + 'px';
+  const aSize = aSizeNum + 'px';
+
+  const qSizeMobile = Math.round(qSizeNum * 0.88) + 'px';
+  const aSizeMobile = Math.round(aSizeNum * 0.88) + 'px';
+
+  const qWeight = document.getElementById('opt-qweight').value;
+  const aWeight = document.getElementById('opt-aweight').value;
+  const gap = document.getElementById('opt-gap').value;
+  const radius = document.getElementById('opt-radius').value;
+  const icon = document.getElementById('opt-icon').value;
+  const divStyle = document.getElementById('opt-divider').value;
+  const anim = document.getElementById('opt-anim').value;
+  const hoverEffect = document.getElementById('opt-hover-effect').checked;
+  const activeEffect = document.getElementById('opt-active-effect').checked;
+  const openFirst = document.getElementById('opt-open-first').checked;
+
+  const itemStyle = divStyle === 'border'
+    ? `border:1px solid ${borderColor}; border-radius:${radius}px; margin-bottom:${gap}px;`
+    : divStyle === 'line'
+    ? `border-bottom:1px solid ${borderColor}; margin-bottom:${gap}px;`
+    : `background:${fillColor}; border-radius:${radius}px; margin-bottom:${gap}px;`;
+
+  const qPadding = divStyle === 'line' ? '14px 4px' : '16px 20px';
+  const aPadding = divStyle === 'line' ? '0 4px 16px' : '0 20px 16px';
+
+  function getIcon(isOpen) {
+    if (icon === 'plus') return isOpen ? '−' : '+';
+    if (icon === 'arrow') return '▼';
+    if (icon === 'dot') return '●';
+    return '';
+  }
+
+  const itemsHtml = faqs.map((faq, i) => {
+    const isOpen = openFirst && i === 0;
+    const iconHtml = icon !== 'none'
+      ? `<span class="faq-icon" style="font-size:14px; color:${accent}; transition:transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); display:inline-block; ${isOpen && icon === 'arrow' ? 'transform:rotate(180deg);' : ''}">${getIcon(isOpen)}</span>`
+      : '';
+
+    const smoothStyle = anim !== 'instant' 
+      ? `transition: max-height ${anim} cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, padding ${anim} cubic-bezier(0.4, 0, 0.2, 1);` 
+      : '';
+
+    const currentTitleColor = (isOpen && activeEffect) ? accent : qTextColor;
+
+    return `
+  <div class="faq-item" style="${itemStyle} transition: background-color 0.3s ease;">
+    <button class="faq-q" data-idx="${i}" onclick="toggle(${i})" style="width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:${qPadding}; background:none; border:none; cursor:pointer; text-align:left; font-size:${qSize}; font-weight:${qWeight}; color:${currentTitleColor}; font-family:inherit; transition: color 0.3s ease;">
+      <span style="line-height:1.4;">${escHtml(faq.q)}</span>
+      ${iconHtml}
+    </button>
+    <div class="faq-a" style="overflow:hidden; ${smoothStyle} max-height:${isOpen ? '1000px' : '0'}; opacity:${isOpen ? '1' : '0'};">
+      <p style="padding:${aPadding}; font-size:${aSize}; font-weight:${aWeight}; color:${aTextColor}; line-height:1.75; margin:0;">${escHtml(faq.a)}</p>
+    </div>
+  </div>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: ${bgColor}; padding: 16px; font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif; }
+
+${hoverEffect ? `
+.faq-q:hover { color: ${accent} !important; }
+.faq-q:hover .faq-icon { opacity: 0.8; }
+` : ''}
+
+@media (max-width: 768px) {
+  .faq-q { font-size: ${qSizeMobile} !important; }
+  .faq-a p { font-size: ${aSizeMobile} !important; }
+}
+</style>
+</head>
+<body>
+<div id="faq-wrap">${itemsHtml}
+</div>
+<script>
+function toggle(i) {
+  var items = document.querySelectorAll('.faq-item');
+  var questions = document.querySelectorAll('.faq-q');
+  var answers = document.querySelectorAll('.faq-a');
+  var icons = document.querySelectorAll('.faq-icon');
+  var isOpen = answers[i].style.maxHeight !== '0px' && answers[i].style.maxHeight !== '0';
+  
+  answers.forEach(function(a, j) {
+    a.style.maxHeight = '0';
+    a.style.opacity = '0';
+    questions[j].style.color = "${qTextColor}";
+    if (icons[j]) {
+      ${icon === 'plus' ? "icons[j].textContent = '+';" : ''}
+      ${icon === 'arrow' ? "icons[j].style.transform = '';" : ''}
+    }
+  });
+  
+  if (!isOpen) {
+    answers[i].style.maxHeight = answers[i].scrollHeight + 100 + 'px';
+    answers[i].style.opacity = '1';
+    if (${activeEffect}) {
+      questions[i].style.color = "${accent}";
+    }
+    if (icons[i]) {
+      ${icon === 'plus' ? "icons[i].textContent = '−';" : ''}
+      ${icon === 'arrow' ? "icons[i].style.transform = 'rotate(180deg)';" : ''}
+    }
+  }
+}
+<\/script>
+</body>
+</html>`;
+}
+
+function render() {
+  const html = buildWidgetHtml();
+  const area = document.getElementById('preview-area');
+
+  let iframe = area.querySelector('iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.style.cssText = 'width:100%; min-height:100%; border:none; display:block;';
+    iframe.scrolling = 'auto'; 
+    area.appendChild(iframe);
+  }
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  iframe.src = url;
+
+  iframe.onload = () => {
+    try {
+      const h = iframe.contentDocument.body.scrollHeight;
+      iframe.style.height = h + 'px';
+    } catch(e) {}
+  };
+
+  updateCode();
+}
+
+function updateCode() {
+  const html = buildWidgetHtml();
+  const encoded = btoa(unescape(encodeURIComponent(html)));
+  const width = document.getElementById('opt-width').value;
+  const heightOpt = document.getElementById('opt-height').value;
+  const height = heightOpt === 'auto' ? '500px' : heightOpt;
+
+  const code = `<iframe src="data:text/html;base64,${encoded}" width="${width}" height="${height}" frameborder="0" scrolling="no" style="border:none;"></iframe>`;
+
+  document.getElementById('code-output').textContent = code;
+}
+
+function copyCode() {
+  const code = document.getElementById('code-output').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const el = document.getElementById('copy-status');
+    el.textContent = '✓ 코드가 클립보드에 복사되었습니다';
+    setTimeout(() => el.textContent = '', 2500);
+  });
+}
+
+// 초기화 시 셀렉트 박스 스타일에 맞게 레이블 노출 조정
+toggleFillOption();
+renderEditList();
+render();
+</script>
+</body>
+</html>
