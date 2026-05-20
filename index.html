@@ -888,6 +888,26 @@
       color: var(--text3);
     }
 
+    /* 리뷰 캐러셀 썸네일 */
+    .thumb-review-wrap {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      overflow: hidden;
+      padding: 4px 0;
+    }
+    .thumb-review-card {
+      flex-shrink: 0;
+      background: #ffffff;
+      border: 0.5px solid rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 10px 12px;
+      width: 140px;
+    }
+    .thumb-review-stars { color: #f5a623; font-size: 10px; margin-bottom: 4px; }
+    .thumb-review-text { font-size: 9px; color: #1a1a18; line-height: 1.4; margin-bottom: 6px; }
+    .thumb-review-author { font-size: 8px; color: #9a9a94; font-weight: 500; }
+
     /* ── 특징 섹션 ── */
     .features-grid {
       display: grid;
@@ -1187,7 +1207,7 @@
       </div>
       <div class="hero-stats">
         <div class="stat-item">
-          <div class="stat-num">4</div>
+          <div class="stat-num">5</div>
           <div class="stat-label">무료 위젯</div>
         </div>
         <div class="stat-divider"></div>
@@ -1435,6 +1455,41 @@
           </div>
           <div class="widget-card-name">카운트다운 타이머</div>
           <div class="widget-card-desc">이벤트 마감까지 남은 시간을 실시간으로 표시. 6가지 디자인 프리셋과 마감 문구 설정을 지원합니다.</div>
+          <div class="widget-card-footer">
+            <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
+            <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>
+          </div>
+        </div>
+      </a>
+
+      <!-- 후기 롤링 캐러셀 -->
+      <a href="review_carousel.html" class="widget-card fade-up" target="_blank" rel="noopener">
+        <div class="widget-card-thumb">
+          <div class="thumb-review-wrap">
+            <div class="thumb-review-card">
+              <div class="thumb-review-stars">★★★★★</div>
+              <div class="thumb-review-text">정말 도움이 됐어요. 강력 추천합니다!</div>
+              <div class="thumb-review-author">김OO · 마케터</div>
+            </div>
+            <div class="thumb-review-card">
+              <div class="thumb-review-stars">★★★★★</div>
+              <div class="thumb-review-text">코딩 없이 바로 쓸 수 있어서 편했어요.</div>
+              <div class="thumb-review-author">이OO · 강사</div>
+            </div>
+            <div class="thumb-review-card">
+              <div class="thumb-review-stars">★★★★★</div>
+              <div class="thumb-review-text">페이지 전환율이 확실히 올라갔어요!</div>
+              <div class="thumb-review-author">박OO · 크리에이터</div>
+            </div>
+          </div>
+        </div>
+        <div class="widget-card-body">
+          <div class="widget-card-tags">
+            <span class="tag">신뢰</span>
+            <span class="tag">후기</span>
+          </div>
+          <div class="widget-card-name">후기 롤링 캐러셀</div>
+          <div class="widget-card-desc">수강생 후기를 두 줄로 나눠 서로 다른 방향으로 무한 롤링하는 캐러셀. 6가지 카드 디자인 프리셋을 지원합니다.</div>
           <div class="widget-card-footer">
             <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
             <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>

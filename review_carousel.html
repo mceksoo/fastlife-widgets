@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — 후기 롤링 캐러셀</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
+    --text: #1a1a18; --text2: #6b6b66; --text3: #9a9a94;
+    --accent: #1a1a18; --accent-fg: #ffffff;
+    --radius: 10px; --radius-sm: 6px;
+    --green: #1a7a4a; --red: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110; --surface: #1c1c1a; --surface2: #252523;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --text: #f0efe9; --text2: #a0a09a; --text3: #555550;
+      --accent: #f0efe9; --accent-fg: #111110;
+      --green: #4aba7a; --red: #e05c5c;
+    }
+  }
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px 80px;
+  }
+  .layout {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start;
+  }
+  .page-header { grid-column: 1 / -1; margin-bottom: 8px; }
+  .logo-area { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .logo { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+  .provider { font-size: 10px; color: var(--text3); opacity: 0.8; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 5px; }
+  .subtitle { font-size: 14px; color: var(--text2); }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px; }
+  .card:last-child { margin-bottom: 0; }
+  .card-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 16px; }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+  input[type="text"], input[type="color"], select, textarea {
+    width: 100%; padding: 8px 11px; font-size: 13px; font-family: inherit;
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 6px; padding: 0;
+    background: var(--surface2); border: 0.5px solid var(--border); border-radius: 3px; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text); border: 0.5px solid var(--border);
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--border2); }
+  select { cursor: pointer; }
+  textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
+  .color-field-wrap { display: grid; grid-template-columns: 40px 1fr; gap: 8px; }
+  input[type="color"] { padding: 0; height: 34px; cursor: pointer; border-radius: var(--radius-sm); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-row input[type="range"] { flex: 1; }
+  button {
+    display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px;
+    font-size: 13px; font-family: inherit; font-weight: 500;
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    background: transparent; color: var(--text); cursor: pointer;
+    transition: background 0.12s, opacity 0.12s; white-space: nowrap;
+  }
+  button:hover { background: var(--surface2); }
+  button:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { opacity: 0.85; background: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { color: var(--red); border-color: rgba(192,57,43,0.3); }
+  .btn-danger:hover { background: rgba(192,57,43,0.06); }
+  /* 후기 항목 편집 */
+  .review-item { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; }
+  .review-item:last-child { margin-bottom: 0; }
+  .review-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .review-item-num { font-size: 11px; font-weight: 600; color: var(--text3); }
+  .review-item-actions { display: flex; gap: 4px; }
+  /* 별점 선택 */
+  .star-selector { display: flex; gap: 4px; }
+  .star-btn { font-size: 18px; cursor: pointer; background: none; border: none; padding: 0; line-height: 1; transition: transform 0.1s; color: var(--text3); }
+  .star-btn:hover { transform: scale(1.2); }
+  .star-btn.active { color: #f5a623; }
+  /* 우패널 */
+  .right-panel { position: sticky; top: 24px; }
+  .preview-frame { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .preview-note { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; padding: 10px 0 14px; }
+  .preview-label { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 0.5px solid var(--border); }
+  .preview-label span { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+  .preview-area-wrap { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  #preview-main { width: 100%; }
+  .code-box { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-family: monospace; font-size: 12px; color: var(--text2); word-break: break-all; line-height: 1.6; max-height: 120px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
+  .code-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .status-msg { font-size: 12px; font-weight: 400; color: var(--green); min-height: 20px; margin-top: 6px; }
+  .divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+  /* 프리셋 */
+  .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .preset-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 10px 6px; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface2); cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    font-family: inherit; width: 100%;
+  }
+  .preset-btn:hover { border-color: var(--border2); background: var(--surface); }
+  .preset-btn.active { border-color: var(--accent); background: var(--surface); }
+  .preset-preview {
+    width: 100%; height: 54px; border-radius: 4px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    border: 0.5px solid rgba(0,0,0,0.07);
+  }
+  .preset-name { font-size: 11px; color: var(--text2); text-align: center; white-space: nowrap; }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .right-panel { position: static; }
+    body { padding: 20px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="page-header">
+    <div class="logo-area">
+      <div class="logo">위젯 갤러리</div>
+      <div class="provider">(주)패스트라이프 제공</div>
+    </div>
+    <h1>후기 롤링 캐러셀</h1>
+    <p class="subtitle">수강생 후기를 두 줄로 나눠 서로 다른 방향으로 무한 롤링하는 위젯을 만들어보세요.</p>
+  </div>
+
+  <div class="left-panel">
+
+    <!-- 디자인 프리셋 -->
+    <div class="card">
+      <div class="card-title">디자인 프리셋</div>
+      <div class="preset-grid">
+
+        <button class="preset-btn active" onclick="applyPreset('light')" id="preset-light">
+          <div class="preset-preview" style="background:#f8f8f6;">
+            <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:6px;padding:6px 8px;max-width:80%;">
+              <div style="color:#f5a623;font-size:9px;">★★★★★</div>
+              <div style="font-size:8px;color:#1a1a18;margin-top:2px;line-height:1.3;">정말 도움이 됐어요</div>
+              <div style="font-size:7px;color:#9a9a94;margin-top:2px;">홍길동</div>
+            </div>
+          </div>
+          <span class="preset-name">기본형</span>
+        </button>
+
+        <button class="preset-btn" onclick="applyPreset('quote')" id="preset-quote">
+          <div class="preset-preview" style="background:#f8f8f6;">
+            <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:6px;padding:6px 10px;max-width:82%;position:relative;">
+              <div style="font-size:20px;line-height:1;color:#f5a623;opacity:0.3;position:absolute;top:2px;left:6px;font-family:Georgia,serif;">"</div>
+              <div style="font-size:7px;color:#1a1a18;font-style:italic;line-height:1.4;margin-top:10px;margin-bottom:5px;">정말 도움이 됐어요</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:0.5px solid rgba(0,0,0,0.08);padding-top:4px;">
+                <div style="font-size:6px;color:#9a9a94;font-weight:600;">홍길동</div>
+                <div style="color:#f5a623;font-size:7px;">★★★★★</div>
+              </div>
+            </div>
+          </div>
+          <span class="preset-name">따옴표형</span>
+        </button>
+
+        <button class="preset-btn" onclick="applyPreset('avatar')" id="preset-avatar">
+          <div class="preset-preview" style="background:#f8f8f6;">
+            <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:6px;padding:6px 8px;max-width:80%;">
+              <div style="color:#f5a623;font-size:7px;margin-bottom:3px;">★★★★★</div>
+              <div style="font-size:7px;color:#1a1a18;line-height:1.4;margin-bottom:5px;">정말 도움이 됐어요</div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <div style="width:14px;height:14px;border-radius:50%;background:#4a7aaa;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <span style="font-size:7px;font-weight:700;color:#fff;">홍</span>
+                </div>
+                <div style="font-size:6px;color:#1a1a18;font-weight:600;">홍길동<span style="font-weight:400;color:#9a9a94;"> · 강사</span></div>
+              </div>
+            </div>
+          </div>
+          <span class="preset-name">아바타형</span>
+        </button>
+
+        <button class="preset-btn" onclick="applyPreset('colorbar')" id="preset-colorbar">
+          <div class="preset-preview" style="background:#f8f8f6;">
+            <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:6px;overflow:hidden;max-width:80%;">
+              <div style="height:3px;background:#1a6fd4;width:100%;"></div>
+              <div style="padding:5px 8px;">
+                <div style="color:#f5a623;font-size:7px;margin-bottom:2px;">★★★★★</div>
+                <div style="font-size:7px;color:#1a1a18;line-height:1.3;margin-bottom:3px;">정말 도움이 됐어요</div>
+                <div style="font-size:6px;color:#4a7aaa;font-weight:600;">홍길동</div>
+              </div>
+            </div>
+          </div>
+          <span class="preset-name">컬러바형</span>
+        </button>
+
+        <button class="preset-btn" onclick="applyPreset('minimal')" id="preset-minimal">
+          <div class="preset-preview" style="background:#ffffff;">
+            <div style="border-bottom:1.5px solid #1a1a18;padding:6px 8px;max-width:80%;">
+              <div style="color:#f5a623;font-size:9px;">★★★★★</div>
+              <div style="font-size:8px;color:#1a1a18;margin-top:2px;line-height:1.3;">정말 도움이 됐어요</div>
+              <div style="font-size:7px;color:#9a9a94;margin-top:2px;">홍길동</div>
+            </div>
+          </div>
+          <span class="preset-name">미니멀형</span>
+        </button>
+
+        <button class="preset-btn" onclick="applyPreset('dark')" id="preset-dark">
+          <div class="preset-preview" style="background:#1a1a18;">
+            <div style="background:#2a2a28;border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 8px;max-width:80%;">
+              <div style="color:#f5a623;font-size:9px;">★★★★★</div>
+              <div style="font-size:8px;color:#f0efe9;margin-top:2px;line-height:1.3;">정말 도움이 됐어요</div>
+              <div style="font-size:7px;color:#6b6b66;margin-top:2px;">홍길동</div>
+            </div>
+          </div>
+          <span class="preset-name">다크형</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- 후기 목록 -->
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">후기 목록</div>
+        <button class="btn-sm" onclick="addReview()">+ 후기 추가</button>
+      </div>
+      <p class="hint" style="margin-bottom:12px;">후기는 자동으로 두 줄에 나눠 배치됩니다. 자연스러운 롤링을 위해 6개 이상을 권장합니다.</p>
+      <div id="review-list"></div>
+    </div>
+
+    <!-- 스타일 설정 -->
+    <div class="card">
+      <div class="card-title">스타일 설정</div>
+      <div class="row2">
+        <div class="field">
+          <label>전체 배경색</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-bg" value="#f8f8f6" oninput="syncColor('opt-bg','opt-bg-t')" />
+            <input type="text"  id="opt-bg-t" value="#f8f8f6" oninput="syncColor('opt-bg-t','opt-bg')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>카드 배경색</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-card-bg" value="#ffffff" oninput="syncColor('opt-card-bg','opt-card-bg-t')" />
+            <input type="text"  id="opt-card-bg-t" value="#ffffff" oninput="syncColor('opt-card-bg-t','opt-card-bg')" />
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>후기 텍스트 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-text" value="#1a1a18" oninput="syncColor('opt-text','opt-text-t')" />
+            <input type="text"  id="opt-text-t" value="#1a1a18" oninput="syncColor('opt-text-t','opt-text')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>작성자 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-author" value="#9a9a94" oninput="syncColor('opt-author','opt-author-t')" />
+            <input type="text"  id="opt-author-t" value="#9a9a94" oninput="syncColor('opt-author-t','opt-author')" />
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>별점 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-star" value="#f5a623" oninput="syncColor('opt-star','opt-star-t')" />
+            <input type="text"  id="opt-star-t" value="#f5a623" oninput="syncColor('opt-star-t','opt-star')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>카드 테두리 색상</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-border" value="#e8e8e4" oninput="syncColor('opt-border','opt-border-t')" />
+            <input type="text"  id="opt-border-t" value="#e8e8e4" oninput="syncColor('opt-border-t','opt-border')" />
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="row2">
+        <div class="field">
+          <label>후기 폰트 크기 (px)</label>
+          <input type="text" id="opt-review-size" value="13" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>작성자 폰트 크기 (px)</label>
+          <input type="text" id="opt-author-size" value="11" oninput="render()" />
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>카드 모서리 둥글기 (px)</label>
+          <input type="text" id="opt-radius" value="10" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>카드 최대 너비 (px)</label>
+          <input type="text" id="opt-card-width" value="260" oninput="render()" />
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="row2">
+        <div class="field">
+          <label>스크롤 속도 (px/초)</label>
+          <input type="text" id="opt-speed" value="60" oninput="render()" />
+          <p class="hint">숫자가 클수록 빠릅니다.</p>
+        </div>
+        <div class="field">
+          <label>행 간격 (px)</label>
+          <input type="text" id="opt-row-gap" value="12" oninput="render()" />
+        </div>
+      </div>
+      <div class="divider"></div>
+      <!-- 페이드 그라데이션 -->
+      <div class="field">
+        <label>페이드 그라데이션 색상</label>
+        <div class="color-field-wrap">
+          <input type="color" id="opt-fade" value="#f8f8f6" oninput="syncColor('opt-fade','opt-fade-t');syncFadeWithBg()" />
+          <input type="text"  id="opt-fade-t" value="#f8f8f6" oninput="syncColor('opt-fade-t','opt-fade')" />
+        </div>
+        <p class="hint">보통 전체 배경색과 동일하게 설정하세요.</p>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>페이드 너비 (px)</label>
+        <input type="text" id="opt-fade-width" value="80" oninput="render()" />
+        <p class="hint">0으로 설정하면 그라데이션이 비활성화됩니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /.left-panel -->
+
+  <!-- 우패널 -->
+  <div class="right-panel">
+    <div class="preview-frame">
+      <div class="preview-label"><span>미리보기</span></div>
+      <div class="preview-area-wrap">
+        <iframe id="preview-main" frameborder="0" scrolling="no" style="border:none; display:block; width:100%;"></iframe>
+      </div>
+    </div>
+    <p class="preview-note">미리보기 화면은 참고용입니다. 실제 화면은 코드를 적용하여 확인해주세요.</p>
+
+    <div class="card">
+      <div class="card-title">퍼블 코드블럭에 붙여넣기</div>
+      <div class="code-header">
+        <span style="font-size:12px; color:var(--text2);">생성된 iframe 코드</span>
+        <button class="btn-sm btn-primary" onclick="copyCode()">코드 복사</button>
+      </div>
+      <div class="code-box" id="code-output"></div>
+      <div class="status-msg" id="copy-status"></div>
+      <div class="divider"></div>
+      <p style="font-size:12px; color:var(--text2); line-height:1.7;">
+        1. 위 코드를 복사하세요<br>
+        2. 퍼블 편집기에서 코드블럭을 추가하세요<br>
+        3. 코드블럭 안에 붙여넣으세요
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── 후기 데이터 ── */
+let reviews = [
+  { rating: 5, text: '실제로 적용해보니 페이지 전환율이 확실히 올라갔어요. 강력 추천합니다!', author: '김OO', role: '마케터' },
+  { rating: 5, text: '코딩 없이 바로 쓸 수 있어서 너무 편했어요. 디자인도 깔끔하고 좋아요.', author: '이OO', role: '강사' },
+  { rating: 5, text: '퍼블에서 이런 위젯을 무료로 쓸 수 있다니 놀랍네요. 감사합니다!', author: '박OO', role: '크리에이터' },
+  { rating: 4, text: '설정이 직관적이고 결과물이 예쁘게 나와서 만족합니다.', author: '최OO', role: '사업자' },
+  { rating: 5, text: '고객 신뢰도를 높이는 데 정말 효과적이에요. 강의 페이지에 딱이에요.', author: '정OO', role: '강사' },
+  { rating: 5, text: '처음에 반신반의했는데 실제로 써보니 완전 만족이에요.', author: '강OO', role: '유튜버' },
+];
+
+/* ── 프리셋 ── */
+const PRESETS = {
+  light:    { bg: '#f8f8f6', cardBg: '#ffffff',   text: '#1a1a18', author: '#9a9a94', star: '#f5a623', border: '#e8e8e4', fade: '#f8f8f6', accentColor: '#1a6fd4', cardStyle: 'default' },
+  quote:    { bg: '#f8f8f6', cardBg: '#ffffff',   text: '#1a1a18', author: '#9a9a94', star: '#f5a623', border: '#e8e8e4', fade: '#f8f8f6', accentColor: '#1a6fd4', cardStyle: 'quote' },
+  avatar:   { bg: '#f8f8f6', cardBg: '#ffffff',   text: '#1a1a18', author: '#6b6b66', star: '#f5a623', border: '#e8e8e4', fade: '#f8f8f6', accentColor: '#1a6fd4', cardStyle: 'avatar' },
+  colorbar: { bg: '#f8f8f6', cardBg: '#ffffff',   text: '#1a1a18', author: '#4a7aaa', star: '#f5a623', border: '#e8e8e4', fade: '#f8f8f6', accentColor: '#1a6fd4', cardStyle: 'colorbar' },
+  minimal:  { bg: '#ffffff', cardBg: 'transparent', text: '#1a1a18', author: '#9a9a94', star: '#f5a623', border: '#1a1a18', fade: '#ffffff', accentColor: '#1a6fd4', cardStyle: 'minimal' },
+  dark:     { bg: '#1a1a18', cardBg: '#2a2a28',   text: '#f0efe9', author: '#6b6b66', star: '#f5a623', border: '#333330', fade: '#1a1a18', accentColor: '#6ab0ff', cardStyle: 'default' },
+};
+let currentPreset = 'light';
+let currentCardStyle = 'default';
+
+function applyPreset(key) {
+  if (!PRESETS[key]) return;
+  currentPreset = key;
+  currentCardStyle = PRESETS[key].cardStyle;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('preset-' + key).classList.add('active');
+  /* 색상은 건드리지 않음 — 카드 디자인 구조(cardStyle)만 변경 */
+  render();
+}
+function setColor(cId, tId, val) {
+  const c = document.getElementById(cId);
+  const t = document.getElementById(tId);
+  if (c) c.value = val;
+  if (t) t.value = val;
+}
+function syncColor(a, b) {
+  document.getElementById(b).value = document.getElementById(a).value;
+  render();
+}
+function syncFadeWithBg() {
+  // 페이드 색상은 배경색 변경 시 자동 동기화 안 함 (사용자가 직접 설정)
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/\n/g,'<br>');
+}
+
+/* ── 별점 UI 렌더 ── */
+function renderStars(container, rating, index) {
+  container.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'star-btn' + (i <= rating ? ' active' : '');
+    btn.textContent = '★';
+    btn.onclick = () => { reviews[index].rating = i; renderReviewList(); render(); };
+    container.appendChild(btn);
+  }
+}
+
+/* ── 후기 편집 UI ── */
+function renderReviewList() {
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  reviews.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    div.innerHTML = `
+      <div class="review-item-header">
+        <span class="review-item-num">후기 ${i + 1} <span style="font-size:10px;color:var(--text3);">(${i % 2 === 0 ? '1행' : '2행'})</span></span>
+        <div class="review-item-actions">
+          ${i > 0 ? `<button class="btn-sm" onclick="moveReview(${i},-1)">↑</button>` : ''}
+          ${i < reviews.length - 1 ? `<button class="btn-sm" onclick="moveReview(${i},1)">↓</button>` : ''}
+          ${reviews.length > 2 ? `<button class="btn-sm btn-danger" onclick="removeReview(${i})">삭제</button>` : ''}
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label>별점</label>
+        <div class="star-selector" id="stars-${i}"></div>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label>후기 내용</label>
+        <textarea oninput="reviews[${i}].text=this.value; render()">${escHtml(r.text)}</textarea>
+      </div>
+      <div class="row2">
+        <div class="field" style="margin-bottom:0;">
+          <label>작성자명</label>
+          <input type="text" value="${escHtml(r.author)}" oninput="reviews[${i}].author=this.value; render()" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>직함/역할 (선택)</label>
+          <input type="text" value="${escHtml(r.role||'')}" placeholder="예: 강사, 마케터" oninput="reviews[${i}].role=this.value; render()" />
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+    renderStars(div.querySelector(`#stars-${i}`), r.rating, i);
+  });
+}
+
+function addReview() {
+  reviews.push({ rating: 5, text: '새로운 후기 내용을 입력하세요.', author: '홍OO', role: '' });
+  renderReviewList(); render();
+}
+function removeReview(i) { reviews.splice(i, 1); renderReviewList(); render(); }
+function moveReview(i, d) { const j = i + d; [reviews[i], reviews[j]] = [reviews[j], reviews[i]]; renderReviewList(); render(); }
+
+/* ── 위젯 HTML 생성 ── */
+function buildWidgetHtml() {
+  const bg         = document.getElementById('opt-bg-t').value;
+  const cardBg     = document.getElementById('opt-card-bg-t').value;
+  const textColor  = document.getElementById('opt-text-t').value;
+  const authorColor= document.getElementById('opt-author-t').value;
+  const starColor  = document.getElementById('opt-star-t').value;
+  const borderColor= document.getElementById('opt-border-t').value;
+  const fadeColor  = document.getElementById('opt-fade-t').value;
+  const accentColor= (PRESETS[currentPreset] && PRESETS[currentPreset].accentColor) || '#1a6fd4';
+  const reviewSize = parseInt(document.getElementById('opt-review-size').value) || 13;
+  const authorSize = parseInt(document.getElementById('opt-author-size').value) || 11;
+  const cardRadius = parseInt(document.getElementById('opt-radius').value) || 10;
+  const cardWidth  = parseInt(document.getElementById('opt-card-width').value) || 260;
+  const speed      = parseFloat(document.getElementById('opt-speed').value) || 60;
+  const rowGap     = parseInt(document.getElementById('opt-row-gap').value) || 12;
+  const fadeWidth  = Math.max(0, parseInt(document.getElementById('opt-fade-width').value) || 0);
+  const isMinimal  = currentCardStyle === 'minimal';
+  const isQuote    = currentCardStyle === 'quote';
+  const isAvatar   = currentCardStyle === 'avatar';
+  const isColorbar = currentCardStyle === 'colorbar';
+
+  // 1행(홀수 인덱스), 2행(짝수 인덱스)으로 분배
+  const row1 = reviews.filter((_, i) => i % 2 === 0);
+  const row2 = reviews.filter((_, i) => i % 2 === 1);
+
+  function starHtml(rating) {
+    let s = '';
+    for (let i = 1; i <= 5; i++) {
+      s += `<span style="color:${i <= rating ? starColor : 'rgba(0,0,0,0.15)'};font-size:12px;">★</span>`;
+    }
+    return s;
+  }
+
+  /* 아바타 이니셜 색상 팔레트 */
+  const avatarColors = ['#4a7aaa','#1a7a4a','#c45c1a','#7a4aaa','#aa4a6a','#4a9a8a'];
+  function avatarColor(name, idx) {
+    const code = (name || '?').charCodeAt(0) + idx;
+    return avatarColors[code % avatarColors.length];
+  }
+
+  function cardHtml(r, idx) {
+    const borderBase  = `border: 0.5px solid ${borderColor}; border-radius: ${cardRadius}px;`;
+    const shadowLight = `box-shadow: 0 2px 8px rgba(0,0,0,0.06);`;
+    /* 모든 카드: display:flex flex-direction:column
+       본문: flex:1 → 남은 공간 채움
+       작성자: flex-shrink:0 → 항상 하단 고정 */
+
+    if (isQuote) {
+      return `<div style="flex-shrink:0; white-space:normal; width:${cardWidth}px; display:flex; flex-direction:column; background:${cardBg}; ${borderBase} ${shadowLight} padding:18px 18px 14px; margin:0 8px; position:relative;">
+  <div style="font-size:42px; line-height:1; color:${starColor}; opacity:0.25; font-family:Georgia,serif; position:absolute; top:10px; left:14px; font-weight:700;">"</div>
+  <div style="flex:1; font-size:${reviewSize}px; color:${textColor}; line-height:1.65; font-style:italic; margin-top:18px; margin-bottom:10px; padding-left:4px;">${escHtml(r.text)}</div>
+  <div style="display:flex; align-items:center; justify-content:space-between; border-top:0.5px solid ${borderColor}; padding-top:10px; flex-shrink:0;">
+    <div style="font-size:${authorSize}px; color:${authorColor}; font-weight:600;">${escHtml(r.author)}${r.role ? `<span style="font-weight:400; opacity:0.7;"> · ${escHtml(r.role)}</span>` : ''}</div>
+    <div>${starHtml(r.rating)}</div>
+  </div>
+</div>`;
+    } else if (isAvatar) {
+      const initial = (r.author || '?').charAt(0);
+      const aColor  = avatarColor(r.author, idx);
+      return `<div style="flex-shrink:0; white-space:normal; width:${cardWidth}px; display:flex; flex-direction:column; background:${cardBg}; ${borderBase} ${shadowLight} padding:16px 18px; margin:0 8px;">
+  <div style="margin-bottom:8px; flex-shrink:0;">${starHtml(r.rating)}</div>
+  <div style="flex:1; font-size:${reviewSize}px; color:${textColor}; line-height:1.65; margin-bottom:14px;">${escHtml(r.text)}</div>
+  <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+    <div style="width:30px; height:30px; border-radius:50%; background:${aColor}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <span style="font-size:13px; font-weight:700; color:#ffffff;">${initial}</span>
+    </div>
+    <div>
+      <div style="font-size:${authorSize}px; font-weight:600; color:${textColor};">${escHtml(r.author)}</div>
+      ${r.role ? `<div style="font-size:${Math.max(9, authorSize - 1)}px; color:${authorColor};">${escHtml(r.role)}</div>` : ''}
+    </div>
+  </div>
+</div>`;
+    } else if (isMinimal) {
+      return `<div style="flex-shrink:0; white-space:normal; width:${cardWidth}px; display:flex; flex-direction:column; background:${cardBg}; border-bottom:1.5px solid ${borderColor}; padding:14px 16px; margin:0 8px;">
+  <div style="margin-bottom:6px; flex-shrink:0;">${starHtml(r.rating)}</div>
+  <div style="flex:1; font-size:${reviewSize}px; color:${textColor}; line-height:1.6; margin-bottom:8px;">${escHtml(r.text)}</div>
+  <div style="font-size:${authorSize}px; color:${authorColor}; font-weight:500; flex-shrink:0;">${escHtml(r.author)}${r.role ? `<span style="font-weight:400; opacity:0.7;"> · ${escHtml(r.role)}</span>` : ''}</div>
+</div>`;
+    } else if (isColorbar) {
+      return `<div style="flex-shrink:0; white-space:normal; width:${cardWidth}px; display:flex; flex-direction:column; background:${cardBg}; ${borderBase} ${shadowLight} overflow:hidden; margin:0 8px;">
+  <div style="height:3px; background:${accentColor}; width:100%; flex-shrink:0;"></div>
+  <div style="flex:1; display:flex; flex-direction:column; padding:12px 16px 14px;">
+    <div style="margin-bottom:6px; flex-shrink:0;">${starHtml(r.rating)}</div>
+    <div style="flex:1; font-size:${reviewSize}px; color:${textColor}; line-height:1.6; margin-bottom:10px;">${escHtml(r.text)}</div>
+    <div style="font-size:${authorSize}px; color:${authorColor}; font-weight:600; flex-shrink:0;">${escHtml(r.author)}${r.role ? `<span style="font-weight:400; opacity:0.7;"> · ${escHtml(r.role)}</span>` : ''}</div>
+  </div>
+</div>`;
+    } else {
+      return `<div style="flex-shrink:0; white-space:normal; width:${cardWidth}px; display:flex; flex-direction:column; background:${cardBg}; ${borderBase} ${shadowLight} padding:14px 16px; margin:0 8px;">
+  <div style="margin-bottom:6px; flex-shrink:0;">${starHtml(r.rating)}</div>
+  <div style="flex:1; font-size:${reviewSize}px; color:${textColor}; line-height:1.6; margin-bottom:8px;">${escHtml(r.text)}</div>
+  <div style="font-size:${authorSize}px; color:${authorColor}; font-weight:500; flex-shrink:0;">${escHtml(r.author)}${r.role ? `<span style="font-weight:400; opacity:0.7;"> · ${escHtml(r.role)}</span>` : ''}</div>
+</div>`;
+    }
+  }
+
+  function rowHtml(rowReviews, dir) {
+    const cards = rowReviews.map((r, i) => cardHtml(r, i)).join('');
+    return `<div class="row-wrap-inner">
+  <div id="track-${dir}" style="display:flex; flex-direction:row; white-space:nowrap; will-change:transform;">
+    <div id="block-${dir}-a" style="display:inline-flex; flex-shrink:0; align-items:stretch;">${cards}</div>
+    <div style="display:inline-flex; flex-shrink:0; align-items:stretch;">${cards}</div>
+    <div style="display:inline-flex; flex-shrink:0; align-items:stretch;">${cards}</div>
+    <div style="display:inline-flex; flex-shrink:0; align-items:stretch;">${cards}</div>
+  </div>
+</div>`;
+  }
+
+  const fadeCss = fadeWidth > 0 ? `
+.row-wrap-inner::before, .row-wrap-inner::after {
+  content:''; position:absolute; top:0; bottom:0; width:${fadeWidth}px; z-index:2; pointer-events:none;
+}
+.row-wrap-inner::before { left:0; background:linear-gradient(to right, ${fadeColor}, transparent); }
+.row-wrap-inner::after  { right:0; background:linear-gradient(to left, ${fadeColor}, transparent); }` : '';
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: ${bg}; font-family: 'Pretendard Variable','Pretendard',-apple-system,sans-serif; margin: 0; width: 100%; overflow: hidden; }
+.widget { background: ${bg}; padding: ${rowGap}px 0 ${rowGap + 2}px; width: 100%; }
+.row-wrap { position: relative; overflow: visible; margin-bottom: ${rowGap}px; }
+.row-wrap:last-child { margin-bottom: 0; }
+.row-wrap-inner { overflow: hidden; position: relative; width: 100%; }
+${fadeCss}
+@keyframes scrollLeft  { from { transform: translateX(0); } to { transform: translateX(-25%); } }
+@keyframes scrollRight { from { transform: translateX(-25%); } to { transform: translateX(0); } }
+/* 위 keyframe은 rAF 방식으로 대체됨. 하위 호환성을 위해 유지 */
+</style>
+</head>
+<body>
+<div class="widget" id="widget">
+  <div class="row-wrap" id="wrap-left">
+    ${rowHtml(row1, 'left')}
+  </div>
+  <div class="row-wrap" id="wrap-right">
+    ${rowHtml(row2.length > 0 ? row2 : row1, 'right')}
+  </div>
+</div>
+<script>
+(function() {
+  var speed = ${speed};
+
+  /* JS 기반 무한 스크롤:
+     CSS 애니메이션 keyframe은 끝점에서 시작점으로 순간 점프하는 문제가 있음.
+     rAF 방식은 translateX를 매 프레임 직접 계산해서 완전 끊김 없는 루프 구현. */
+  function startRow(dir) {
+    var block = document.getElementById('block-' + dir + '-a');
+    var track = block ? block.parentElement : null;
+    if (!block || !track) return;
+
+    var blockW = block.offsetWidth;
+    if (blockW === 0) { setTimeout(function(){ startRow(dir); }, 50); return; }
+
+    /* dir: left → 음수 방향, right → 양수 방향 */
+    var pos = (dir === 'right') ? -blockW : 0;
+    var lastTime = null;
+    var raf = null;
+
+    function step(ts) {
+      if (!lastTime) lastTime = ts;
+      var dt = ts - lastTime;
+      lastTime = ts;
+
+      var delta = speed * dt / 1000;
+      if (dir === 'left') {
+        pos -= delta;
+        if (pos <= -blockW) pos += blockW;
+      } else {
+        pos += delta;
+        if (pos >= 0) pos -= blockW;
+      }
+      track.style.transform = 'translateX(' + pos + 'px)';
+      raf = requestAnimationFrame(step);
+    }
+
+    /* 이전 animation 제거 */
+    track.style.animation = 'none';
+    track.style.transform = 'translateX(' + pos + 'px)';
+    raf = requestAnimationFrame(step);
+    track._raf = raf;
+  }
+
+  function start() { startRow('left'); startRow('right'); }
+
+  /* 위젯 실제 높이 postMessage 전달 */
+  function sendHeight() {
+    var w = document.getElementById('widget');
+    if (!w) return;
+    var h = w.getBoundingClientRect().height || w.offsetHeight;
+    if (h > 0) window.parent.postMessage({ type: 'review-height', height: Math.ceil(h) }, '*');
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function() { start(); sendHeight(); });
+  } else {
+    setTimeout(function() { start(); sendHeight(); }, 100);
+  }
+  setTimeout(sendHeight, 400);
+
+  window.addEventListener('resize', function() {
+    /* blockW가 바뀔 수 있으므로 rAF 취소 후 재시작 */
+    ['left','right'].forEach(function(dir) {
+      var track = document.getElementById('track-' + dir);
+      if (track && track._raf) { cancelAnimationFrame(track._raf); }
+    });
+    setTimeout(start, 50);
+  });
+})();
+<\/script>
+</body>
+</html>`;
+}
+
+/* ── 렌더 ── */
+let lastHeight = 200;
+
+function render() {
+  const html = buildWidgetHtml();
+  const iframe = document.getElementById('preview-main');
+
+  if (!iframe._msgBound) {
+    iframe._msgBound = true;
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'review-height' && e.data.height > 0) {
+        lastHeight = e.data.height;
+        iframe.style.height = e.data.height + 'px';
+        updateCode();
+      }
+    });
+  }
+
+  const blob = new Blob([html], { type: 'text/html' });
+  iframe.src = URL.createObjectURL(blob);
+  updateCode();
+}
+
+function updateCode() {
+  const html    = buildWidgetHtml();
+  const encoded = btoa(unescape(encodeURIComponent(html)));
+  const h = lastHeight > 0 ? lastHeight : 200;
+  const code = `<iframe src="data:text/html;base64,${encoded}" frameborder="0" scrolling="no" style="border:none; width:100%; display:block; height:${h}px;"></iframe>`;
+  document.getElementById('code-output').textContent = code;
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('code-output').textContent).then(() => {
+    const el = document.getElementById('copy-status');
+    el.textContent = '✓ 코드가 클립보드에 복사되었습니다';
+    setTimeout(() => el.textContent = '', 2500);
+  });
+}
+
+renderReviewList();
+/* 초기 로드 시 기본 프리셋 색상 적용 */
+(function() {
+  const p = PRESETS[currentPreset];
+  if (p) {
+    setColor('opt-bg',      'opt-bg-t',      p.bg);
+    setColor('opt-card-bg', 'opt-card-bg-t', p.cardBg);
+    setColor('opt-text',    'opt-text-t',    p.text);
+    setColor('opt-author',  'opt-author-t',  p.author);
+    setColor('opt-star',    'opt-star-t',    p.star);
+    setColor('opt-border',  'opt-border-t',  p.border);
+    setColor('opt-fade',    'opt-fade-t',    p.fade);
+  }
+})();
+render();
+</script>
+</body>
+</html>
