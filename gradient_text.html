@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — 그라디언트 텍스트</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
+    --text: #1a1a18; --text2: #6b6b66; --text3: #9a9a94;
+    --accent: #1a1a18; --accent-fg: #ffffff;
+    --radius: 10px; --radius-sm: 6px; --green: #1a7a4a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110; --surface: #1c1c1a; --surface2: #252523;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --text: #f0efe9; --text2: #a0a09a; --text3: #555550;
+      --accent: #f0efe9; --accent-fg: #111110; --green: #4aba7a;
+    }
+  }
+  body { font-family: 'Pretendard Variable','Pretendard',-apple-system,sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px 80px; }
+  .layout { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
+  .page-header { grid-column: 1 / -1; margin-bottom: 8px; }
+  .logo-area { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .logo { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+  .provider { font-size: 10px; color: var(--text3); opacity: 0.8; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 5px; }
+  .subtitle { font-size: 14px; color: var(--text2); }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px; }
+  .card:last-child { margin-bottom: 0; }
+  .card-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 16px; }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+  input[type="text"], input[type="color"], select, textarea {
+    width: 100%; padding: 8px 11px; font-size: 13px; font-family: inherit;
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 6px; padding: 0;
+    background: var(--surface2); border: 0.5px solid var(--border); border-radius: 3px; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text); border: 0.5px solid var(--border);
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--border2); }
+  input[type="color"] { padding: 0; height: 34px; cursor: pointer; border-radius: var(--radius-sm); }
+  .color-field-wrap { display: grid; grid-template-columns: 40px 1fr; gap: 8px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-row input[type="range"] { flex: 1; }
+  .divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+  button {
+    display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px;
+    font-size: 13px; font-family: inherit; font-weight: 500;
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    background: transparent; color: var(--text); cursor: pointer; transition: background 0.12s; white-space: nowrap;
+  }
+  button:hover { background: var(--surface2); }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { opacity: 0.85; background: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  /* 그라디언트 프리셋 */
+  .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .preset-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 10px 6px; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface2); cursor: pointer; transition: border-color 0.15s;
+    font-family: inherit; width: 100%;
+  }
+  .preset-btn:hover { border-color: var(--border2); background: var(--surface); }
+  .preset-btn.active { border-color: var(--accent); background: var(--surface); }
+  .preset-swatch { width: 100%; height: 28px; border-radius: 4px; }
+  .preset-name { font-size: 10px; color: var(--text2); text-align: center; white-space: nowrap; }
+  /* 폰트 목록 */
+  .font-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .font-btn {
+    padding: 8px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface2); cursor: pointer; transition: border-color 0.15s;
+    font-family: inherit; text-align: left; width: 100%; display: flex; flex-direction: column; gap: 2px;
+  }
+  .font-btn:hover { border-color: var(--border2); background: var(--surface); }
+  .font-btn.active { border-color: var(--accent); background: var(--surface); }
+  .font-btn-label { font-size: 11px; color: var(--text2); }
+  .font-category { font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin: 14px 0 8px; }
+  .font-category:first-child { margin-top: 0; }
+  /* 우패널 */
+  .right-panel { position: sticky; top: 24px; }
+  .preview-frame { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .preview-label { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 0.5px solid var(--border); }
+  .preview-label span { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+  .preview-area-wrap { padding: 16px; }
+  #preview-main { width: 100%; border: none; display: block; min-height: 80px; }
+  .preview-note { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; padding: 10px 0 14px; }
+  .code-box { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-family: monospace; font-size: 12px; color: var(--text2); word-break: break-all; line-height: 1.6; max-height: 120px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
+  .code-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .status-msg { font-size: 12px; font-weight: 500; color: var(--green); min-height: 20px; margin-top: 6px; transition: opacity 0.3s; opacity: 0; }
+  .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .sw-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border2); transition: .4s; border-radius: 22px; }
+  .sw-track:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+  input:checked + .sw-track { background-color: var(--accent); }
+  input:checked + .sw-track:before { transform: translateX(18px); }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .right-panel { position: static; }
+    body { padding: 20px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="page-header">
+    <div class="logo-area">
+      <div class="logo">위젯 갤러리</div>
+      <div class="provider">(주)패스트라이프 제공</div>
+    </div>
+    <h1>그라디언트 텍스트</h1>
+    <p class="subtitle">퍼블에서 적용할 수 없는 그라디언트 색상을 텍스트에 입혀보세요. 폰트·크기·방향을 자유롭게 설정할 수 있습니다.</p>
+  </div>
+
+  <div class="left-panel">
+
+    <!-- 그라디언트 프리셋 -->
+    <div class="card">
+      <div class="card-title">그라디언트 프리셋</div>
+      <div class="preset-grid" id="preset-grid"></div>
+    </div>
+
+    <!-- 텍스트 설정 -->
+    <div class="card">
+      <div class="card-title">텍스트 설정</div>
+      <div class="field">
+        <label>텍스트 내용</label>
+        <textarea id="opt-text" oninput="render()">나만의 그라디언트 텍스트</textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>텍스트 크기 PC (px)</label>
+          <input type="text" id="opt-size-pc" value="36" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>텍스트 크기 모바일 (px)</label>
+          <input type="text" id="opt-size-mobile" value="26" oninput="render()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>굵기 — <span id="opt-weight-val">700</span></label>
+        <div class="slider-row">
+          <input type="range" id="opt-weight" min="100" max="900" step="100" value="700"
+            oninput="document.getElementById('opt-weight-val').textContent=this.value; render()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>텍스트 정렬</label>
+        <select id="opt-align" onchange="render()">
+          <option value="center">가운데</option>
+          <option value="left">왼쪽</option>
+          <option value="right">오른쪽</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>자간 (em) — <span id="opt-spacing-val">0</span></label>
+        <div class="slider-row">
+          <input type="range" id="opt-spacing" min="-0.1" max="0.5" step="0.01" value="0"
+            oninput="document.getElementById('opt-spacing-val').textContent=parseFloat(this.value).toFixed(2); render()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>줄 간격 — <span id="opt-lh-val">1.3</span></label>
+        <div class="slider-row">
+          <input type="range" id="opt-lh" min="1.0" max="2.0" step="0.1" value="1.3"
+            oninput="document.getElementById('opt-lh-val').textContent=parseFloat(this.value).toFixed(1); render()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 그라디언트 설정 -->
+    <div class="card">
+      <div class="card-title">그라디언트 설정</div>
+      <div class="row2">
+        <div class="field">
+          <label>색상 1</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-c1" value="#6366f1" oninput="syncColor('opt-c1','opt-c1-t')" />
+            <input type="text"  id="opt-c1-t" value="#6366f1" oninput="syncColor('opt-c1-t','opt-c1')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>색상 2</label>
+          <div class="color-field-wrap">
+            <input type="color" id="opt-c2" value="#ec4899" oninput="syncColor('opt-c2','opt-c2-t')" />
+            <input type="text"  id="opt-c2-t" value="#ec4899" oninput="syncColor('opt-c2-t','opt-c2')" />
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>색상 3 (선택)</label>
+        <div class="row2">
+          <div class="color-field-wrap">
+            <input type="color" id="opt-c3" value="#f59e0b" oninput="syncColor('opt-c3','opt-c3-t')" />
+            <input type="text"  id="opt-c3-t" value="#f59e0b" oninput="syncColor('opt-c3-t','opt-c3')" />
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="opt-c3-use" onchange="render()" style="width:auto;" />
+            <label for="opt-c3-use" style="margin:0;cursor:pointer;">색상 3 사용</label>
+          </div>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>그라디언트 방향</label>
+        <select id="opt-dir" onchange="render()">
+          <option value="to right">→ 왼쪽에서 오른쪽</option>
+          <option value="to left">← 오른쪽에서 왼쪽</option>
+          <option value="to bottom">↓ 위에서 아래</option>
+          <option value="to top">↑ 아래에서 위</option>
+          <option value="135deg">↘ 대각선 (우하향)</option>
+          <option value="45deg">↗ 대각선 (우상향)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 폰트 선택 -->
+    <div class="card">
+      <div class="card-title">폰트 선택</div>
+      <div id="font-list"></div>
+    </div>
+
+    <!-- 배경 설정 -->
+    <div class="card">
+      <div class="card-title">배경 설정</div>
+      <div class="field">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:12px;color:var(--text2);">투명 배경 사용</span>
+          <label class="switch"><input type="checkbox" id="opt-transparent" onchange="toggleBgField(); render()"><span class="sw-track"></span></label>
+        </div>
+        <p class="hint" style="margin-top:0;">체크 시 배경이 투명해집니다. 퍼블 코드블럭 배경색이 그대로 보여요.</p>
+      </div>
+      <div class="field" id="bg-color-field" style="margin-bottom:0;">
+        <label>배경 색상</label>
+        <div class="color-field-wrap">
+          <input type="color" id="opt-bg" value="#ffffff" oninput="syncColor('opt-bg','opt-bg-t')" />
+          <input type="text"  id="opt-bg-t" value="#ffffff" oninput="syncColor('opt-bg-t','opt-bg')" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 우패널 -->
+  <div class="right-panel">
+    <div class="preview-frame">
+      <div class="preview-label"><span>미리보기</span></div>
+      <div class="preview-area-wrap">
+        <iframe id="preview-main" frameborder="0" scrolling="no" style="height:120px;"></iframe>
+      </div>
+    </div>
+    <p class="preview-note">미리보기 화면은 참고용입니다. 실제 화면은 코드를 적용하여 확인해주세요.</p>
+    <div class="card">
+      <div class="card-title">퍼블 코드블럭에 붙여넣기</div>
+      <div class="code-header">
+        <span style="font-size:12px;color:var(--text2);">생성된 iframe 코드</span>
+        <button class="btn-sm btn-primary" onclick="copyCode()">코드 복사</button>
+      </div>
+      <div class="code-box" id="code-output"></div>
+      <div class="status-msg" id="copy-status"></div>
+      <div class="divider"></div>
+      <p style="font-size:12px;color:var(--text2);line-height:1.7;">
+        1. 위 코드를 복사하세요<br>
+        2. 퍼블 편집기에서 코드블럭을 추가하세요<br>
+        3. 코드블럭 안에 붙여넣으세요
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── 폰트 목록 ── */
+const FONTS = [
+  { key: 'pretendard', name: 'Pretendard', label: '프리텐다드 (기본)', category: '기본', url: null, css: "'Pretendard Variable','Pretendard',-apple-system,sans-serif" },
+  { key: 'inter',        name: 'Inter',            label: 'Inter',            category: '영문 산세리프', url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap',            css: "'Inter',sans-serif" },
+  { key: 'montserrat',   name: 'Montserrat',       label: 'Montserrat',       category: '영문 산세리프', url: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap',       css: "'Montserrat',sans-serif" },
+  { key: 'raleway',      name: 'Raleway',          label: 'Raleway',          category: '영문 산세리프', url: 'https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&display=swap',          css: "'Raleway',sans-serif" },
+  { key: 'josefin',      name: 'Josefin Sans',     label: 'Josefin Sans',     category: '영문 산세리프', url: 'https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap',         css: "'Josefin Sans',sans-serif" },
+  { key: 'nunito',       name: 'Nunito',           label: 'Nunito',           category: '영문 산세리프', url: 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap',           css: "'Nunito',sans-serif" },
+  { key: 'bebas',        name: 'Bebas Neue',       label: 'Bebas Neue',       category: '영문 디스플레이', url: 'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap',                      css: "'Bebas Neue',sans-serif" },
+  { key: 'righteous',    name: 'Righteous',        label: 'Righteous',        category: '영문 디스플레이', url: 'https://fonts.googleapis.com/css2?family=Righteous&display=swap',                       css: "'Righteous',sans-serif" },
+  { key: 'fredoka',      name: 'Fredoka One',      label: 'Fredoka One',      category: '영문 디스플레이', url: 'https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap',                     css: "'Fredoka One',sans-serif" },
+  { key: 'orbitron',     name: 'Orbitron',         label: 'Orbitron',         category: '영문 디스플레이', url: 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap',        css: "'Orbitron',sans-serif" },
+  { key: 'playfair',     name: 'Playfair Display', label: 'Playfair Display', category: '영문 세리프', url: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap', css: "'Playfair Display',serif" },
+  { key: 'merriweather', name: 'Merriweather',     label: 'Merriweather',     category: '영문 세리프', url: 'https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&display=swap',     css: "'Merriweather',serif" },
+  { key: 'librebaskerville', name: 'Libre Baskerville', label: 'Libre Baskerville', category: '영문 세리프', url: 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap', css: "'Libre Baskerville',serif" },
+  { key: 'dancing',      name: 'Dancing Script',   label: 'Dancing Script',   category: '영문 핸드라이팅', url: 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap',      css: "'Dancing Script',cursive" },
+  { key: 'pacifico',     name: 'Pacifico',         label: 'Pacifico',         category: '영문 핸드라이팅', url: 'https://fonts.googleapis.com/css2?family=Pacifico&display=swap',                        css: "'Pacifico',cursive" },
+  { key: 'caveat',       name: 'Caveat',           label: 'Caveat',           category: '영문 핸드라이팅', url: 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap',              css: "'Caveat',cursive" },
+  { key: 'lobster',      name: 'Lobster',          label: 'Lobster',          category: '영문 핸드라이팅', url: 'https://fonts.googleapis.com/css2?family=Lobster&display=swap',                         css: "'Lobster',cursive" },
+  { key: 'blackhansans', name: 'Black Han Sans',   label: 'Black Han Sans',   category: '한국어 산세리프', url: 'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap',                  css: "'Black Han Sans',sans-serif" },
+  { key: 'noto-sans-kr', name: 'Noto Sans KR',     label: 'Noto Sans KR',     category: '한국어 산세리프', url: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap',    css: "'Noto Sans KR',sans-serif" },
+  { key: 'noto-serif-kr',name: 'Noto Serif KR',    label: 'Noto Serif KR',    category: '한국어 세리프',   url: 'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&display=swap',   css: "'Noto Serif KR',serif" },
+  { key: 'nanum-myeongjo', name: 'Nanum Myeongjo', label: 'Nanum Myeongjo',   category: '한국어 세리프',   url: 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap',   css: "'Nanum Myeongjo',serif" },
+];
+
+let currentFont = 'pretendard';
+
+/* ── 그라디언트 프리셋 ── */
+const PRESETS = [
+  { name: '오로라',   c1: '#6366f1', c2: '#ec4899', c3: null },
+  { name: '선셋',     c1: '#f97316', c2: '#ec4899', c3: '#6366f1' },
+  { name: '오션',     c1: '#06b6d4', c2: '#3b82f6', c3: null },
+  { name: '포레스트', c1: '#10b981', c2: '#06b6d4', c3: null },
+  { name: '골드',     c1: '#f59e0b', c2: '#ef4444', c3: null },
+  { name: '미드나잇', c1: '#8b5cf6', c2: '#3b82f6', c3: '#06b6d4' },
+  { name: '로즈',     c1: '#fb7185', c2: '#f43f5e', c3: null },
+  { name: '라임',     c1: '#84cc16', c2: '#10b981', c3: null },
+];
+
+function buildPresetGrid() {
+  const grid = document.getElementById('preset-grid');
+  grid.innerHTML = '';
+  PRESETS.forEach((p, i) => {
+    const grad = p.c3
+      ? `linear-gradient(to right, ${p.c1}, ${p.c3}, ${p.c2})`
+      : `linear-gradient(to right, ${p.c1}, ${p.c2})`;
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn' + (i === 0 ? ' active' : '');
+    btn.innerHTML = `<div class="preset-swatch" style="background:${grad};"></div><span class="preset-name">${p.name}</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setColor('opt-c1', 'opt-c1-t', p.c1);
+      setColor('opt-c2', 'opt-c2-t', p.c2);
+      if (p.c3) {
+        setColor('opt-c3', 'opt-c3-t', p.c3);
+        document.getElementById('opt-c3-use').checked = true;
+      } else {
+        document.getElementById('opt-c3-use').checked = false;
+      }
+      render();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function buildFontList() {
+  const container = document.getElementById('font-list');
+  container.innerHTML = '';
+  let lastCat = '';
+  FONTS.forEach(f => {
+    if (f.category !== lastCat) {
+      lastCat = f.category;
+      const cat = document.createElement('div');
+      cat.className = 'font-category';
+      cat.textContent = f.category;
+      container.appendChild(cat);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'font-btn' + (f.key === currentFont ? ' active' : '');
+    btn.dataset.key = f.key;
+    /* 미리 로드된 폰트로 버튼 이름 표시 */
+    btn.innerHTML = `<span class="font-btn-label">${f.label}</span>`;
+    btn.onclick = () => {
+      currentFont = f.key;
+      document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    };
+    container.appendChild(btn);
+  });
+}
+
+function setColor(cId, tId, val) {
+  const c = document.getElementById(cId); if (c) c.value = val;
+  const t = document.getElementById(tId); if (t) t.value = val;
+}
+function syncColor(a, b) {
+  const va = document.getElementById(a).value;
+  document.getElementById(b).value = va;
+  render();
+}
+
+/* ── 높이 계산 ── */
+function calcHeight(sizePx, lineHeight, text) {
+  const lines = (text || '').split('\n').length;
+  return Math.ceil(sizePx * lineHeight * lines + sizePx * 1.0) + 24;
+}
+
+/* ── 위젯 HTML 생성 ── */
+function buildWidgetHtml(sizePx) {
+  const text        = document.getElementById('opt-text').value || '';
+  const weight      = document.getElementById('opt-weight').value;
+  const align       = document.getElementById('opt-align').value;
+  const lh          = parseFloat(document.getElementById('opt-lh').value) || 1.3;
+  const spacing     = parseFloat(document.getElementById('opt-spacing').value) || 0;
+  const c1          = document.getElementById('opt-c1-t').value;
+  const c2          = document.getElementById('opt-c2-t').value;
+  const c3use       = document.getElementById('opt-c3-use').checked;
+  const c3          = document.getElementById('opt-c3-t').value;
+  const dir         = document.getElementById('opt-dir').value;
+  const transparent = document.getElementById('opt-transparent').checked;
+  const bg          = transparent ? 'transparent' : document.getElementById('opt-bg-t').value;
+  const fontObj     = FONTS.find(f => f.key === currentFont) || FONTS[0];
+  const fontLink    = fontObj.url ? `<link rel="stylesheet" href="${fontObj.url}" />` : `<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />`;
+  const gradColors  = c3use ? `${c1}, ${c3}, ${c2}` : `${c1}, ${c2}`;
+  const gradient    = `linear-gradient(${dir}, ${gradColors})`;
+  const escapedText = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+${fontLink}
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { background: ${bg}; margin: 0; width: 100%; display: flex; align-items: center; justify-content: ${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; }
+.gt {
+  font-family: ${fontObj.css};
+  font-size: ${sizePx}px;
+  font-weight: ${weight};
+  line-height: ${lh};
+  letter-spacing: ${spacing}em;
+  text-align: ${align};
+  background: ${gradient};
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  width: 100%;
+  padding: 12px 0;
+}
+</style>
+</head>
+<body>
+<div class="gt" id="gt">${escapedText}</div>
+
+</body>
+</html>`;
+}
+
+function toggleBgField() {
+  const transparent = document.getElementById('opt-transparent').checked;
+  document.getElementById('bg-color-field').style.opacity = transparent ? '0.4' : '1';
+  document.getElementById('bg-color-field').style.pointerEvents = transparent ? 'none' : 'auto';
+}
+
+let lastPcH = 80;
+
+/* ── 렌더 ── */
+function render() {
+  const sizePc     = parseInt(document.getElementById('opt-size-pc').value)     || 36;
+  const sizeMobile = parseInt(document.getElementById('opt-size-mobile').value) || 26;
+  const lh         = parseFloat(document.getElementById('opt-lh').value) || 1.3;
+  const text       = document.getElementById('opt-text').value || '';
+
+  const pcH = calcHeight(sizePc, lh, text);
+
+  const pcHtml = buildWidgetHtml(sizePc);
+  const iframe = document.getElementById('preview-main');
+
+  iframe.style.height = pcH + 'px';
+  iframe.src = URL.createObjectURL(new Blob([pcHtml], { type: 'text/html' }));
+  updateCode(sizePc, sizeMobile, pcH);
+}
+
+function updateCode(sizePc, sizeMobile, pcH) {
+  const text     = document.getElementById('opt-text').value || '';
+  const weight   = document.getElementById('opt-weight').value;
+  const align    = document.getElementById('opt-align').value;
+  const lh       = parseFloat(document.getElementById('opt-lh').value) || 1.3;
+  const c1       = document.getElementById('opt-c1-t').value;
+  const c2       = document.getElementById('opt-c2-t').value;
+  const c3use    = document.getElementById('opt-c3-use').checked;
+  const c3       = document.getElementById('opt-c3-t').value;
+  const dir      = document.getElementById('opt-dir').value;
+  const spacing     = parseFloat(document.getElementById('opt-spacing').value) || 0;
+  const transparent = document.getElementById('opt-transparent').checked;
+  const bg          = transparent ? 'transparent' : document.getElementById('opt-bg-t').value;
+  const fontObj  = FONTS.find(f => f.key === currentFont) || FONTS[0];
+  const fontLink = fontObj.url ? `<link rel="stylesheet" href="${fontObj.url}" />` : `<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />`;
+  const gradColors = c3use ? `${c1}, ${c3}, ${c2}` : `${c1}, ${c2}`;
+  const gradient = `linear-gradient(${dir}, ${gradColors})`;
+  const escapedText = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+
+  /* 모바일 height = 모바일 폰트 크기 기준으로 calcHeight 계산
+     위젯 내부 CSS는 PC 폰트 크기 고정, @media 없음
+     생성 코드 외부 style에서 iframe height만 모바일로 교체 (롤링 마퀴와 동일한 방식) */
+  const mobileH = calcHeight(sizeMobile, lh, text);
+
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+${fontLink}
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { background: ${bg}; margin: 0; width: 100%; display: flex; align-items: center; justify-content: ${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; }
+.gt { font-family: ${fontObj.css}; font-size: ${sizePc}px; font-weight: ${weight}; line-height: ${lh}; letter-spacing: ${spacing}em; text-align: ${align}; background: ${gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; width: 100%; padding: 12px 0; }
+@media (max-width: 768px) { .gt { font-size: ${sizeMobile}px; } }
+</style>
+</head>
+<body>
+<div class="gt">${escapedText}</div>
+</body>
+</html>`;
+
+  const encoded = btoa(unescape(encodeURIComponent(html)));
+  const code =
+`<iframe src="data:text/html;base64,${encoded}" frameborder="0" scrolling="no" style="border:none; width:100%; display:block; height:${pcH}px; min-height:${pcH}px;"></iframe>
+<style>
+  @media (max-width: 768px) {
+    iframe[src^="data:text/html;base64"] { height: ${mobileH}px !important; min-height: ${mobileH}px !important; }
+  }
+</style>`;
+  document.getElementById('code-output').textContent = code;
+}
+
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('code-output').textContent).then(() => {
+    const el = document.getElementById('copy-status');
+    el.textContent = '✓ 코드가 클립보드에 복사되었습니다';
+    el.style.opacity = '1';
+    setTimeout(() => { el.style.opacity = '0'; }, 2500);
+  });
+}
+
+buildPresetGrid();
+buildFontList();
+render();
+</script>
+</body>
+</html>
