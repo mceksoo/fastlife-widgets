@@ -891,22 +891,30 @@
     /* 리뷰 캐러셀 썸네일 */
     .thumb-review-wrap {
       display: flex;
-      gap: 8px;
+      flex-direction: column;
+      gap: 6px;
       width: 100%;
       overflow: hidden;
-      padding: 4px 0;
+      padding: 16px 0;
+    }
+    .thumb-review-row {
+      display: flex;
+      gap: 6px;
+      overflow: hidden;
+      padding: 0 16px;
     }
     .thumb-review-card {
       flex-shrink: 0;
       background: #ffffff;
       border: 0.5px solid rgba(0,0,0,0.1);
       border-radius: 8px;
-      padding: 10px 12px;
-      width: 140px;
+      padding: 8px 10px;
+      flex: 1;
+      min-width: 0;
     }
-    .thumb-review-stars { color: #f5a623; font-size: 10px; margin-bottom: 4px; }
-    .thumb-review-text { font-size: 9px; color: #1a1a18; line-height: 1.4; margin-bottom: 6px; }
-    .thumb-review-author { font-size: 8px; color: #9a9a94; font-weight: 500; }
+    .thumb-review-stars { color: #f5a623; font-size: 9px; margin-bottom: 3px; }
+    .thumb-review-text { font-size: 8px; color: #1a1a18; line-height: 1.4; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .thumb-review-author { font-size: 7px; color: #9a9a94; font-weight: 500; }
 
     /* ── 특징 섹션 ── */
     .features-grid {
@@ -1464,22 +1472,41 @@
 
       <!-- 후기 롤링 캐러셀 -->
       <a href="review_carousel.html" class="widget-card fade-up" target="_blank" rel="noopener">
-        <div class="widget-card-thumb">
+        <div class="widget-card-thumb" style="padding:0;">
           <div class="thumb-review-wrap">
-            <div class="thumb-review-card">
-              <div class="thumb-review-stars">★★★★★</div>
-              <div class="thumb-review-text">정말 도움이 됐어요. 강력 추천합니다!</div>
-              <div class="thumb-review-author">김OO · 마케터</div>
+            <div class="thumb-review-row">
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">정말 도움이 됐어요. 강력 추천합니다!</div>
+                <div class="thumb-review-author">김OO · 마케터</div>
+              </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">코딩 없이 바로 쓸 수 있어서 편했어요.</div>
+                <div class="thumb-review-author">이OO · 강사</div>
+              </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">페이지 전환율이 올라갔어요!</div>
+                <div class="thumb-review-author">박OO · 크리에이터</div>
+              </div>
             </div>
-            <div class="thumb-review-card">
-              <div class="thumb-review-stars">★★★★★</div>
-              <div class="thumb-review-text">코딩 없이 바로 쓸 수 있어서 편했어요.</div>
-              <div class="thumb-review-author">이OO · 강사</div>
-            </div>
-            <div class="thumb-review-card">
-              <div class="thumb-review-stars">★★★★★</div>
-              <div class="thumb-review-text">페이지 전환율이 확실히 올라갔어요!</div>
-              <div class="thumb-review-author">박OO · 크리에이터</div>
+            <div class="thumb-review-row" style="margin-left:-50px; padding-right:0; padding-left:66px;">
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">설정이 직관적이고 결과물이 예뻐요.</div>
+                <div class="thumb-review-author">최OO · 사업자</div>
+              </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">완전 만족이에요. 강의 페이지에 딱!</div>
+                <div class="thumb-review-author">정OO · 강사</div>
+              </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">무료인데 이 퀄리티면 충분합니다.</div>
+                <div class="thumb-review-author">강OO · 유튜버</div>
+              </div>
             </div>
           </div>
         </div>
