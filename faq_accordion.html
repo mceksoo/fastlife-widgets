@@ -417,16 +417,6 @@
       </div>
 
       <div class="field">
-        <label>모서리 둥글기</label>
-        <div class="slider-row">
-          <input type="range" id="opt-radius" min="0" max="20" value="8" oninput="updateSlider('opt-radius','opt-radius-val','px'); render()" />
-          <span class="slider-val" id="opt-radius-val">8px</span>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="field">
         <label>아이콘 스타일</label>
         <select id="opt-icon" onchange="render()">
           <option value="plus">+ / −</option>
@@ -473,6 +463,16 @@
           <input type="text" id="opt-fill-text" value="#f5f5f3" oninput="syncColor('opt-fill-text', 'opt-fill-color')" />
         </div>
       </div>
+
+      <div class="field">
+        <label>모서리 둥글기(테두리형, 채움형에만 적용) </label>
+        <div class="slider-row">
+          <input type="range" id="opt-radius" min="0" max="20" value="8" oninput="updateSlider('opt-radius','opt-radius-val','px'); render()" />
+          <span class="slider-val" id="opt-radius-val">8px</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
 
     </div>
 
