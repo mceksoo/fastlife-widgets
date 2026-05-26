@@ -104,12 +104,7 @@
   .code-box { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-family: monospace; font-size: 12px; color: var(--text2); word-break: break-all; line-height: 1.6; max-height: 120px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
   .code-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .status-msg { font-size: 12px; font-weight: 500; color: var(--green); min-height: 20px; margin-top: 6px; transition: opacity 0.3s; opacity: 0; }
-  .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .sw-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border2); transition: .4s; border-radius: 22px; }
-  .sw-track:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-  input:checked + .sw-track { background-color: var(--accent); }
-  input:checked + .sw-track:before { transform: translateX(18px); }
+
   @media (max-width: 860px) {
     .layout { grid-template-columns: 1fr; }
     .right-panel { position: static; }
@@ -162,7 +157,7 @@
         </div>
       </div>
       <div class="field">
-        <label>텍스트 정렬</label>
+        <label>수평 정렬</label>
         <select id="opt-align" onchange="render()">
           <option value="center">가운데</option>
           <option value="left">왼쪽</option>
@@ -236,24 +231,7 @@
       <div id="font-list"></div>
     </div>
 
-    <!-- 배경 설정 -->
-    <div class="card">
-      <div class="card-title">배경 설정</div>
-      <div class="field">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-size:12px;color:var(--text2);">투명 배경 사용</span>
-          <label class="switch"><input type="checkbox" id="opt-transparent" onchange="toggleBgField(); render()"><span class="sw-track"></span></label>
-        </div>
-        <p class="hint" style="margin-top:0;">체크 시 배경이 투명해집니다. 퍼블 코드블럭 배경색이 그대로 보여요.</p>
-      </div>
-      <div class="field" id="bg-color-field" style="margin-bottom:0;">
-        <label>배경 색상</label>
-        <div class="color-field-wrap">
-          <input type="color" id="opt-bg" value="#ffffff" oninput="syncColor('opt-bg','opt-bg-t')" />
-          <input type="text"  id="opt-bg-t" value="#ffffff" oninput="syncColor('opt-bg-t','opt-bg')" />
-        </div>
-      </div>
-    </div>
+
 
   </div>
 
@@ -392,14 +370,14 @@ function syncColor(a, b) {
 /* ── 높이 계산 ── */
 function calcHeight(sizePx, lineHeight, text) {
   const lines = (text || '').split('\n').length;
-  return Math.ceil(sizePx * lineHeight * lines + sizePx * 1.0) + 24;
+  /* 패딩 없음 - 텍스트 높이에 딱 맞게 */
+  return Math.ceil(sizePx * lineHeight * lines + sizePx * 0.3) + 4;
 }
 
 /* ── 위젯 HTML 생성 ── */
 function buildWidgetHtml(sizePx) {
   const text        = document.getElementById('opt-text').value || '';
   const weight      = document.getElementById('opt-weight').value;
-  const align       = document.getElementById('opt-align').value;
   const lh          = parseFloat(document.getElementById('opt-lh').value) || 1.3;
   const spacing     = parseFloat(document.getElementById('opt-spacing').value) || 0;
   const c1          = document.getElementById('opt-c1-t').value;
@@ -407,8 +385,8 @@ function buildWidgetHtml(sizePx) {
   const c3use       = document.getElementById('opt-c3-use').checked;
   const c3          = document.getElementById('opt-c3-t').value;
   const dir         = document.getElementById('opt-dir').value;
-  const transparent = document.getElementById('opt-transparent').checked;
-  const bg          = transparent ? 'transparent' : document.getElementById('opt-bg-t').value;
+  const bg    = 'transparent';
+  const align  = document.getElementById('opt-align').value;
   const fontObj     = FONTS.find(f => f.key === currentFont) || FONTS[0];
   const fontLink    = fontObj.url ? `<link rel="stylesheet" href="${fontObj.url}" />` : `<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />`;
   const gradColors  = c3use ? `${c1}, ${c3}, ${c2}` : `${c1}, ${c2}`;
@@ -421,36 +399,33 @@ function buildWidgetHtml(sizePx) {
 <meta charset="UTF-8">
 ${fontLink}
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; }
-body { background: ${bg}; margin: 0; width: 100%; display: flex; align-items: center; justify-content: ${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; overflow: hidden; }
+body { height: 100%; overflow: hidden; margin: 0; padding: 0; display: flex; align-items: center; }
 .gt {
+  display: block;
+  width: 100%;
   font-family: ${fontObj.css};
   font-size: ${sizePx}px;
   font-weight: ${weight};
   line-height: ${lh};
   letter-spacing: ${spacing}em;
   text-align: ${align};
+}
+.gt-inner {
+  display: inline-block;
   background: ${gradient};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  width: 100%;
-  padding: 12px 0;
 }
 </style>
 </head>
 <body>
-<div class="gt" id="gt">${escapedText}</div>
+<div class="gt" id="gt"><span class="gt-inner">${escapedText}</span></div>
 
 </body>
 </html>`;
-}
-
-function toggleBgField() {
-  const transparent = document.getElementById('opt-transparent').checked;
-  document.getElementById('bg-color-field').style.opacity = transparent ? '0.4' : '1';
-  document.getElementById('bg-color-field').style.pointerEvents = transparent ? 'none' : 'auto';
 }
 
 let lastPcH = 80;
@@ -475,7 +450,6 @@ function render() {
 function updateCode(sizePc, sizeMobile, pcH) {
   const text     = document.getElementById('opt-text').value || '';
   const weight   = document.getElementById('opt-weight').value;
-  const align    = document.getElementById('opt-align').value;
   const lh       = parseFloat(document.getElementById('opt-lh').value) || 1.3;
   const c1       = document.getElementById('opt-c1-t').value;
   const c2       = document.getElementById('opt-c2-t').value;
@@ -483,8 +457,8 @@ function updateCode(sizePc, sizeMobile, pcH) {
   const c3       = document.getElementById('opt-c3-t').value;
   const dir      = document.getElementById('opt-dir').value;
   const spacing     = parseFloat(document.getElementById('opt-spacing').value) || 0;
-  const transparent = document.getElementById('opt-transparent').checked;
-  const bg          = transparent ? 'transparent' : document.getElementById('opt-bg-t').value;
+  const bg    = 'transparent';
+  const align  = document.getElementById('opt-align').value;
   const fontObj  = FONTS.find(f => f.key === currentFont) || FONTS[0];
   const fontLink = fontObj.url ? `<link rel="stylesheet" href="${fontObj.url}" />` : `<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />`;
   const gradColors = c3use ? `${c1}, ${c3}, ${c2}` : `${c1}, ${c2}`;
@@ -502,15 +476,15 @@ function updateCode(sizePc, sizeMobile, pcH) {
 <meta charset="UTF-8">
 ${fontLink}
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; }
-body { background: ${bg}; margin: 0; width: 100%; display: flex; align-items: center; justify-content: ${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; }
-.gt { font-family: ${fontObj.css}; font-size: ${sizePc}px; font-weight: ${weight}; line-height: ${lh}; letter-spacing: ${spacing}em; text-align: ${align}; background: ${gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; width: 100%; padding: 12px 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; overflow: hidden; }
+body { height: 100%; overflow: hidden; margin: 0; padding: 0; display: flex; align-items: center; }
+.gt { display: block; width: 100%; font-family: ${fontObj.css}; font-size: ${sizePc}px; font-weight: ${weight}; line-height: ${lh}; letter-spacing: ${spacing}em; text-align: ${align}; } .gt-inner { display: inline-block; background: ${gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 @media (max-width: 768px) { .gt { font-size: ${sizeMobile}px; } }
 </style>
 </head>
 <body>
-<div class="gt">${escapedText}</div>
+<div class="gt"><span class="gt-inner">${escapedText}</span></div>
 </body>
 </html>`;
 
