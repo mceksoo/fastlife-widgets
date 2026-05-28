@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위젯 갤러리 — 텍스트 애니메이션</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7f6f3;--surface:#ffffff;--surface2:#f0efe9;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);
+  --text:#1a1a18;--text2:#6b6b66;--text3:#9a9a94;
+  --accent:#1a1a18;--accent-fg:#ffffff;
+  --radius:10px;--radius-sm:6px;--green:#1a7a4a;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#111110;--surface:#1c1c1a;--surface2:#252523;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);--text:#f0efe9;--text2:#a0a09a;--text3:#555550;--accent:#f0efe9;--accent-fg:#111110;--green:#4aba7a;}
+}
+body{font-family:'Pretendard Variable','Pretendard',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:40px 20px 80px;}
+.layout{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:start;}
+.page-header{grid-column:1/-1;margin-bottom:8px;}
+.logo-area{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.logo{font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);}
+.provider{font-size:10px;color:var(--text3);opacity:0.8;}
+h1{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-bottom:5px;}
+.subtitle{font-size:14px;color:var(--text2);}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;}
+.card:last-child{margin-bottom:0;}
+.card-title{font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;}
+.field{margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;}
+input[type="text"],input[type="color"],select,textarea{width:100%;padding:8px 11px;font-size:13px;font-family:inherit;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color 0.15s;}
+textarea{resize:vertical;min-height:70px;line-height:1.5;}
+input[type="range"]{-webkit-appearance:none;width:100%;height:6px;padding:0;background:var(--surface2);border:0.5px solid var(--border);border-radius:3px;cursor:pointer;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--text);border:0.5px solid var(--border);}
+input:focus,select:focus,textarea:focus{border-color:var(--border2);}
+input[type="color"]{padding:0;height:34px;cursor:pointer;border-radius:var(--radius-sm);}
+.color-field-wrap{display:grid;grid-template-columns:40px 1fr;gap:8px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.hint{font-size:11px;color:var(--text3);margin-top:4px;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-row input[type="range"]{flex:1;}
+.divider{height:0.5px;background:var(--border);margin:14px 0;}
+button{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;font-size:13px;font-family:inherit;font-weight:500;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text);cursor:pointer;transition:background 0.12s;white-space:nowrap;}
+button:hover{background:var(--surface2);}
+.btn-primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);}
+.btn-primary:hover{opacity:0.85;background:var(--accent);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+/* 모드 버튼 */
+.mode-section-label{font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin:12px 0 6px;}
+.mode-section-label:first-child{margin-top:0;}
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:4px;}
+.mode-btn{padding:7px 4px;font-size:11px;font-family:inherit;font-weight:500;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all 0.12s;text-align:center;width:100%;}
+.mode-btn:hover{border-color:var(--border2);background:var(--surface);color:var(--text);}
+.mode-btn.active{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);}
+/* 우패널 */
+.right-panel{position:sticky;top:24px;}
+.preview-frame{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.preview-label{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:0.5px solid var(--border);}
+.preview-label span{font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);}
+.preview-area-wrap{padding:0;}
+#preview-main{width:100%;border:none;display:block;min-height:80px;}
+.preview-note{font-size:13px;font-weight:600;color:var(--text);text-align:center;padding:10px 0 14px;}
+.code-box{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-family:monospace;font-size:12px;color:var(--text2);word-break:break-all;line-height:1.6;max-height:120px;overflow-y:auto;margin-bottom:10px;white-space:pre-wrap;}
+.code-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.status-msg{font-size:12px;font-weight:500;color:var(--green);min-height:20px;margin-top:6px;transition:opacity 0.3s;opacity:0;}
+  /* 폰트 드롭다운 */
+  .font-dropdown{position:relative;width:100%;}
+  .font-trigger{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color 0.15s;font-size:13px;color:var(--text);}
+  .font-trigger:hover{border-color:var(--border2);}
+  .font-trigger.open{border-color:var(--border2);border-bottom-left-radius:0;border-bottom-right-radius:0;}
+  .font-trigger-arrow{font-size:10px;color:var(--text3);transition:transform 0.15s;}
+  .font-trigger.open .font-trigger-arrow{transform:rotate(180deg);}
+  .font-list-dropdown{position:absolute;top:100%;left:0;right:0;z-index:100;background:var(--surface);border:0.5px solid var(--border2);border-top:none;border-bottom-left-radius:var(--radius-sm);border-bottom-right-radius:var(--radius-sm);max-height:280px;overflow-y:auto;display:none;}
+  .font-list-dropdown.open{display:block;}
+  .font-option{padding:9px 12px;cursor:pointer;transition:background 0.1s;border-bottom:0.5px solid var(--border);font-size:15px;color:var(--text);}
+  .font-option:last-child{border-bottom:none;}
+  .font-option:hover{background:var(--surface2);}
+  .font-option.active{background:var(--surface2);color:var(--accent);}
+  .font-option-sub{font-size:10px;color:var(--text3);font-family:inherit !important;margin-top:1px;}
+  .font-group-label{padding:6px 12px 3px;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--bg);border-bottom:0.5px solid var(--border);pointer-events:none;}
+@media(max-width:860px){
+  .layout{grid-template-columns:1fr;}
+  .right-panel{position:static;}
+  body{padding:20px 14px 60px;}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="page-header">
+    <div class="logo-area">
+      <div class="logo">위젯 갤러리</div>
+      <div class="provider">(주)패스트라이프 제공</div>
+    </div>
+    <h1>텍스트 애니메이션</h1>
+    <p class="subtitle">텍스트에 인상적인 등장·마우스 반응 애니메이션을 적용하세요. 14가지 모드를 지원합니다.</p>
+  </div>
+
+  <div class="left-panel">
+
+    <!-- 텍스트 설정 -->
+    <div class="card">
+      <div class="card-title">텍스트 설정</div>
+      <div class="field">
+        <label>텍스트 내용 (줄바꿈: Enter)</label>
+        <textarea id="opt-text" oninput="render()">당신의 브랜드를
+다음 레벨로</textarea>
+      </div>
+      <div class="field">
+        <label>폰트</label>
+        <div class="font-dropdown" id="font-dropdown">
+          <div class="font-trigger" id="font-trigger" onclick="toggleFontDropdown()">
+            <span class="font-trigger-name" id="font-trigger-name">프리텐다드 (기본)</span>
+            <span class="font-trigger-arrow">▼</span>
+          </div>
+          <div class="font-list-dropdown" id="font-list-dropdown"></div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>크기 PC (px)</label>
+          <input type="text" id="opt-size-pc" value="64" oninput="render()" />
+        </div>
+        <div class="field">
+          <label>크기 모바일 (px)</label>
+          <input type="text" id="opt-size-mobile" value="36" oninput="render()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>굵기 — <span id="opt-weight-val">700</span></label>
+        <div class="slider-row">
+          <input type="range" id="opt-weight" min="100" max="900" step="100" value="700"
+            oninput="document.getElementById('opt-weight-val').textContent=this.value;render()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>수평 정렬</label>
+        <select id="opt-align" onchange="render()">
+          <option value="center">가운데</option>
+          <option value="left">왼쪽</option>
+          <option value="right">오른쪽</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>자간 (em) — <span id="opt-spacing-val">0</span></label>
+        <div class="slider-row">
+          <input type="range" id="opt-spacing" min="-0.1" max="0.5" step="0.01" value="0"
+            oninput="document.getElementById('opt-spacing-val').textContent=parseFloat(this.value).toFixed(2);render()" />
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>줄 간격 — <span id="opt-lh-val">1.2</span></label>
+        <div class="slider-row">
+          <input type="range" id="opt-lh" min="1.0" max="2.0" step="0.1" value="1.2"
+            oninput="document.getElementById('opt-lh-val').textContent=parseFloat(this.value).toFixed(1);render()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 색상 -->
+    <div class="card">
+      <div class="card-title">색상</div>
+      <div class="field" style="margin-bottom:0;">
+        <label>텍스트 색상</label>
+        <div class="color-field-wrap">
+          <input type="color" id="opt-color" value="#e91e8c" oninput="syncColor('opt-color','opt-color-t')" />
+          <input type="text"  id="opt-color-t" value="#e91e8c" oninput="syncColor('opt-color-t','opt-color')" />
+        </div>
+        <p class="hint">배경은 투명으로 고정됩니다.</p>
+      </div>
+    </div>
+
+    <!-- 애니메이션 모드 -->
+    <div class="card">
+      <div class="card-title">애니메이션 모드</div>
+      <div class="mode-section-label">등장 애니메이션</div>
+      <div class="mode-grid" id="mode-grid-enter"></div>
+      <div class="mode-section-label">마우스 반응</div>
+      <div class="mode-grid" id="mode-grid-mouse"></div>
+    </div>
+
+    <!-- 모션 설정 -->
+    <div class="card">
+      <div class="card-title">모션 설정</div>
+      <div class="field">
+        <label>등장 속도 — <span id="opt-speed-val">60</span>%</label>
+        <div class="slider-row">
+          <input type="range" id="opt-speed" min="10" max="100" value="60"
+            oninput="document.getElementById('opt-speed-val').textContent=this.value;render()" />
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>딜레이 — <span id="opt-delay-val">0</span>ms</label>
+        <div class="slider-row">
+          <input type="range" id="opt-delay" min="0" max="200" value="0"
+            oninput="document.getElementById('opt-delay-val').textContent=this.value;render()" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 우패널 -->
+  <div class="right-panel">
+    <div class="preview-frame">
+      <div class="preview-label">
+        <span>미리보기</span>
+        <button class="btn-sm" onclick="render()">↺ 재생</button>
+      </div>
+      <div class="preview-area-wrap">
+        <iframe id="preview-main" frameborder="0" scrolling="no"></iframe>
+      </div>
+    </div>
+    <p class="preview-note">미리보기 화면은 참고용입니다. 실제 화면은 코드를 적용하여 확인해주세요.</p>
+    <div class="card">
+      <div class="card-title">퍼블 코드블럭에 붙여넣기</div>
+      <div class="code-header">
+        <span style="font-size:12px;color:var(--text2);">생성된 iframe 코드</span>
+        <button class="btn-sm btn-primary" onclick="copyCode()">코드 복사</button>
+      </div>
+      <div class="code-box" id="code-output"></div>
+      <div class="status-msg" id="copy-status"></div>
+      <div class="divider"></div>
+      <p style="font-size:12px;color:var(--text2);line-height:1.7;">
+        1. 위 코드를 복사하세요<br>
+        2. 퍼블 편집기에서 코드블럭을 추가하세요<br>
+        3. 코드블럭 안에 붙여넣으세요
+      </p>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ── 폰트 목록 ── */
+const FONTS = [
+  { key:'pretendard', name:'프리텐다드 (기본)',    category:'기본',          css:"'Pretendard Variable','Pretendard',-apple-system,sans-serif", url:null },
+  { key:'inter',      name:'Inter',               category:'영문 산세리프', css:"'Inter',sans-serif",             url:'https://fonts.googleapis.com/css2?family=Inter:wght@100;400;700;900&display=swap' },
+  { key:'montserrat', name:'Montserrat',          category:'영문 산세리프', css:"'Montserrat',sans-serif",        url:'https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700;900&display=swap' },
+  { key:'syne',       name:'Syne',                category:'영문 산세리프', css:"'Syne',sans-serif",              url:'https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&display=swap' },
+  { key:'dm-sans',    name:'DM Sans',             category:'영문 산세리프', css:"'DM Sans',sans-serif",           url:'https://fonts.googleapis.com/css2?family=DM+Sans:wght@100;400;700;900&display=swap' },
+  { key:'bebas',      name:'Bebas Neue',          category:'영문 디스플레이', css:"'Bebas Neue',sans-serif",      url:'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap' },
+  { key:'playfair',   name:'Playfair Display',    category:'영문 세리프',   css:"'Playfair Display',serif",       url:'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap' },
+  { key:'dm-serif',   name:'DM Serif Display',    category:'영문 세리프',   css:"'DM Serif Display',serif",       url:'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap' },
+  { key:'black-han',  name:'Black Han Sans',      category:'한국어 산세리프', css:"'Black Han Sans',sans-serif",  url:'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap' },
+  { key:'noto-sans',  name:'Noto Sans KR',        category:'한국어 산세리프', css:"'Noto Sans KR',sans-serif",    url:'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;400;700;900&display=swap' },
+  { key:'do-hyeon',   name:'Do Hyeon',            category:'한국어 산세리프', css:"'Do Hyeon',sans-serif",        url:'https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap' },
+  { key:'jua',        name:'Jua',                 category:'한국어 산세리프', css:"'Jua',sans-serif",             url:'https://fonts.googleapis.com/css2?family=Jua&display=swap' },
+  { key:'gugi',       name:'Gugi',                category:'한국어 산세리프', css:"'Gugi',sans-serif",            url:'https://fonts.googleapis.com/css2?family=Gugi&display=swap' },
+  { key:'noto-serif', name:'Noto Serif KR',       category:'한국어 세리프',  css:"'Noto Serif KR',serif",         url:'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;400;700;900&display=swap' },
+  { key:'nanum-mj',   name:'Nanum Myeongjo',      category:'한국어 세리프',  css:"'Nanum Myeongjo',serif",        url:'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap' },
+  { key:'hahmlet',    name:'Hahmlet',             category:'한국어 세리프',  css:"'Hahmlet',serif",               url:'https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;700;900&display=swap' },
+  { key:'stylish',    name:'Stylish',             category:'한국어 디스플레이', css:"'Stylish',sans-serif",       url:'https://fonts.googleapis.com/css2?family=Stylish&display=swap' },
+];
+
+const MODES_ENTER = [
+  { value:'char',       label:'Character Split' },
+  { value:'word',       label:'Word Blur-in' },
+  { value:'reveal',     label:'Stagger Reveal' },
+  { value:'drop',       label:'Drop' },
+  { value:'slide',      label:'Slide-in' },
+  { value:'scale',      label:'Scale-up' },
+  { value:'flip',       label:'Flip' },
+  { value:'typewriter', label:'Typewriter' },
+];
+const MODES_MOUSE = [
+  { value:'magnetic',  label:'Magnetic' },
+  { value:'trail',     label:'Cursor Trail' },
+  { value:'glow',      label:'Glow' },
+  { value:'tilt',      label:'Tilt' },
+];
+
+let currentMode = 'char';
+
+/* ── 초기화 ── */
+function init() {
+  /* 폰트 드롭다운 */
+  buildFontDropdown();
+  /* 모드 버튼 */
+  function buildGrid(containerId, modes) {
+    const grid = document.getElementById(containerId);
+    modes.forEach(m => {
+      const btn = document.createElement('button');
+      btn.className = 'mode-btn' + (m.value === currentMode ? ' active' : '');
+      btn.textContent = m.label; btn.dataset.mode = m.value;
+      btn.onclick = () => {
+        currentMode = m.value;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+      };
+      grid.appendChild(btn);
+    });
+  }
+  buildGrid('mode-grid-enter', MODES_ENTER);
+  buildGrid('mode-grid-mouse', MODES_MOUSE);
+  render();
+}
+
+function syncColor(a, b) {
+  document.getElementById(b).value = document.getElementById(a).value;
+  render();
+}
+
+/* ── calcHeight ── */
+function calcHeight(sizePx, lh, text) {
+  const lines = (text || '').split('\n').length;
+  return Math.ceil(sizePx * lh * lines + sizePx * 0.3) + 4;
+}
+
+/* ── 설정값 수집 ── */
+function getState() {
+  return {
+    mode:       currentMode,
+    text:       document.getElementById('opt-text').value || '',
+    fontKey:    currentFont,
+    sizePc:     parseInt(document.getElementById('opt-size-pc').value)     || 64,
+    sizeMobile: parseInt(document.getElementById('opt-size-mobile').value) || 36,
+    weight:     document.getElementById('opt-weight').value,
+    align:      document.getElementById('opt-align').value,
+    spacing:    parseFloat(document.getElementById('opt-spacing').value) || 0,
+    lh:         parseFloat(document.getElementById('opt-lh').value) || 1.2,
+    color:      document.getElementById('opt-color-t').value,
+    speed:      parseInt(document.getElementById('opt-speed').value) || 60,
+    delay:      parseInt(document.getElementById('opt-delay').value) || 0,
+  };
+}
+
+function getFontObj(key) { return FONTS.find(f => f.key === key) || FONTS[0]; }
+
+let currentFont = 'pretendard';
+const loadedFonts = new Set();
+
+function loadFont(fontObj) {
+  if (!fontObj.url || loadedFonts.has(fontObj.key)) return;
+  loadedFonts.add(fontObj.key);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet'; link.href = fontObj.url;
+  document.head.appendChild(link);
+}
+
+function buildFontDropdown() {
+  const list = document.getElementById('font-list-dropdown');
+  list.innerHTML = '';
+  let lastCat = '';
+  FONTS.forEach(f => {
+    loadFont(f);
+    if (f.category !== lastCat) {
+      lastCat = f.category;
+      const grp = document.createElement('div');
+      grp.className = 'font-group-label';
+      grp.textContent = f.category;
+      list.appendChild(grp);
+    }
+    const opt = document.createElement('div');
+    opt.className = 'font-option' + (f.key === currentFont ? ' active' : '');
+    opt.dataset.key = f.key;
+    opt.innerHTML = `<div style="font-family:${f.css};line-height:1.3;">${f.name}</div><div class="font-option-sub">${f.category}</div>`;
+    opt.onclick = () => {
+      currentFont = f.key;
+      document.querySelectorAll('.font-option').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      document.getElementById('font-trigger-name').textContent = f.name;
+      document.getElementById('font-trigger-name').style.fontFamily = f.css;
+      closeFontDropdown();
+      render();
+    };
+    list.appendChild(opt);
+  });
+}
+
+function toggleFontDropdown() {
+  const trigger = document.getElementById('font-trigger');
+  const dropdown = document.getElementById('font-list-dropdown');
+  const isOpen = dropdown.classList.contains('open');
+  if (isOpen) { closeFontDropdown(); } else {
+    trigger.classList.add('open'); dropdown.classList.add('open');
+    const active = dropdown.querySelector('.font-option.active');
+    if (active) active.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function closeFontDropdown() {
+  document.getElementById('font-trigger').classList.remove('open');
+  document.getElementById('font-list-dropdown').classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('font-dropdown');
+  if (dd && !dd.contains(e.target)) closeFontDropdown();
+});
+
+/* ── 헤드라인 HTML 빌드 ── */
+function buildHeadline(s, sizePx) {
+  const mode  = s.mode;
+  const lines = s.text.split('\n');
+  const dur   = (1.2 - s.speed / 100 * 0.8).toFixed(2);
+  const dOff  = (s.delay / 1000).toFixed(3);
+  const isMouse = ['magnetic','trail','glow','tilt'].includes(mode);
+
+  if (mode === 'typewriter') {
+    const charDelay = Math.round(30 - s.speed * 0.2);
+    const cursor = `<span class="fl-cursor" style="display:inline-block;width:3px;background:${s.color};height:1em;vertical-align:middle;margin-left:4px;animation:twBlink 0.8s step-end infinite;"></span>`;
+    return lines.map((l, li) => {
+      const chars = [...l].map(ch =>
+        `<span class="fl-tw" style="opacity:0;">${ch === ' ' ? '&nbsp;' : ch}</span>`
+      ).join('');
+      /* 커서를 마지막 줄 안에 포함 */
+      return `<span style="display:block;">${chars}${li === lines.length - 1 ? cursor : ''}</span>`;
+    }).join('');
+  }
+  if (isMouse) {
+    let ci = 0;
+    return lines.map(l =>
+      `<span style="display:block;">${[...l].map(ch => {
+        if(ch===' ') return `<span style="display:inline-block;width:.28em;"></span>`;
+        return `<span class="fl-ch" data-i="${ci++}" style="display:inline-block;">${ch}</span>`;
+      }).join('')}</span>`
+    ).join('');
+  }
+  if (mode === 'char') {
+    let ci = 0;
+    return lines.map(l =>
+      `<span style="display:block;">${[...l].map(ch => {
+        if(ch===' ') return `<span style="display:inline-block;width:.28em;"></span>`;
+        const d = (Number(dOff)+ci*0.028+Math.random()*0.03).toFixed(3); ci++;
+        return `<span class="fl-char" style="display:inline-block;opacity:0;transform:translateY(55%) rotate(${(Math.random()*8-4).toFixed(1)}deg);transition:opacity ${dur}s cubic-bezier(.22,1,.36,1) ${d}s,transform ${dur}s cubic-bezier(.22,1,.36,1) ${d}s;">${ch}</span>`;
+      }).join('')}</span>`
+    ).join('');
+  }
+  if (mode === 'word') {
+    let wi = 0;
+    return lines.map(l =>
+      `<span style="display:block;">${l.split(' ').map(w => {
+        const d = (Number(dOff)+wi++*0.1).toFixed(2);
+        return `<span class="fl-word" style="display:inline-block;opacity:0;filter:blur(12px);transition:opacity ${dur}s cubic-bezier(.22,1,.36,1) ${d}s,filter ${dur}s cubic-bezier(.22,1,.36,1) ${d}s;">${w}</span>`;
+      }).join('<span style="display:inline-block;width:.28em;"></span>')}</span>`
+    ).join('');
+  }
+  if (mode === 'reveal') {
+    return lines.map((l,i) =>
+      `<span style="display:block;overflow:hidden;line-height:${s.lh};"><span class="fl-reveal" style="display:block;transform:translateY(105%);transition:transform ${dur}s cubic-bezier(.22,1,.36,1) ${(Number(dOff)+i*0.14).toFixed(2)}s;">${l}</span></span>`
+    ).join('');
+  }
+  if (mode === 'drop') {
+    let ci = 0;
+    return lines.map(l =>
+      `<span style="display:block;">${[...l].map(ch => {
+        if(ch===' ') return `<span style="display:inline-block;width:.28em;"></span>`;
+        const d = (Number(dOff)+ci++*0.03).toFixed(3);
+        return `<span class="fl-char" style="display:inline-block;opacity:0;transform:translateY(-80px);transition:opacity ${dur}s cubic-bezier(.34,1.56,.64,1) ${d}s,transform ${dur}s cubic-bezier(.34,1.56,.64,1) ${d}s;">${ch}</span>`;
+      }).join('')}</span>`
+    ).join('');
+  }
+  if (mode === 'slide') {
+    return lines.map((l,i) =>
+      `<span style="display:block;overflow:hidden;line-height:${s.lh};"><span class="fl-reveal" style="display:block;transform:translateX(-80px);opacity:0;transition:transform ${dur}s cubic-bezier(.22,1,.36,1) ${(Number(dOff)+i*0.18).toFixed(2)}s,opacity ${dur}s ease ${(Number(dOff)+i*0.18).toFixed(2)}s;">${l}</span></span>`
+    ).join('');
+  }
+  if (mode === 'scale') {
+    let wi = 0;
+    return lines.map(l =>
+      `<span style="display:block;">${l.split(' ').map(w => {
+        const d = (Number(dOff)+wi++*0.12).toFixed(2);
+        return `<span class="fl-word" style="display:inline-block;opacity:0;transform:scale(0.4);filter:blur(4px);transform-origin:left center;transition:opacity ${dur}s cubic-bezier(.22,1,.36,1) ${d}s,transform ${dur}s cubic-bezier(.22,1,.36,1) ${d}s,filter ${dur}s ease ${d}s;">${w}</span>`;
+      }).join('<span style="display:inline-block;width:.28em;"></span>')}</span>`
+    ).join('');
+  }
+  if (mode === 'flip') {
+    return lines.map((l,i) =>
+      `<span style="display:block;overflow:hidden;line-height:${s.lh};perspective:600px;"><span class="fl-reveal" style="display:block;transform:rotateX(90deg);transform-origin:bottom center;opacity:0;transition:transform ${dur}s cubic-bezier(.22,1,.36,1) ${(Number(dOff)+i*0.16).toFixed(2)}s,opacity 0.3s ease ${(Number(dOff)+i*0.16).toFixed(2)}s;">${l}</span></span>`
+    ).join('');
+  }
+  return lines.map(l => `<span style="display:block;">${l}</span>`).join('');
+}
+
+/* ── 인터랙션 JS ── */
+function buildInteractionJS(s) {
+  const mode  = s.mode;
+  const dur   = (1.2 - s.speed / 100 * 0.8).toFixed(2);
+  const dOff  = (s.delay / 1000).toFixed(3);
+  const charDelay = Math.round(30 - s.speed * 0.2);
+  const isMouse = ['magnetic','trail','glow','tilt'].includes(mode);
+
+  let js = `(function(){
+  function init(){
+    var el=document.getElementById('fl-text');
+    if(!el)return;
+    var mode='${mode}';
+    var dur=${dur};
+    var dOff=${dOff};
+`;
+
+  if (mode === 'typewriter') {
+    js += `
+    var spans=el.querySelectorAll('.fl-tw');
+    var cursor=el.querySelector('.fl-cursor');
+    var i=0;
+    function typeNext(){
+      if(i<spans.length){
+        spans[i].style.opacity='1';
+        i++;
+        setTimeout(typeNext,${charDelay}+Math.random()*15);
+      }
+    }
+    requestAnimationFrame(function(){setTimeout(function(){typeNext();},80+dOff*1000);});
+    return;
+`;
+  } else if (isMouse) {
+    js += `
+    /* 마우스 반응 모드: 글자 처음부터 표시 */
+    var chars=Array.from(el.querySelectorAll('.fl-ch'));
+    var wrap=document.getElementById('fl-wrap')||el.parentElement||el;
+    if(mode==='magnetic'){wrap.addEventListener('mousemove',function(e){var r=wrap.getBoundingClientRect();chars.forEach(function(c){var cr=c.getBoundingClientRect();var cx=cr.left+cr.width/2-r.left,cy=cr.top+cr.height/2-r.top;var dx=e.clientX-r.left-cx,dy=e.clientY-r.top-cy;var d=Math.sqrt(dx*dx+dy*dy),f=Math.max(0,1-d/130);c.style.transform='translate('+(dx*f*0.45)+'px,'+(dy*f*0.3)+'px) scale('+(1+f*0.15)+')';});});wrap.addEventListener('mouseleave',function(){chars.forEach(function(c){c.style.transform='';});});}
+    if(mode==='trail'){wrap.addEventListener('mousemove',function(e){var r=wrap.getBoundingClientRect();chars.forEach(function(c){var cr=c.getBoundingClientRect();var cx=cr.left+cr.width/2-r.left,cy=cr.top+cr.height/2-r.top;var d=Math.sqrt(Math.pow(e.clientX-r.left-cx,2)+Math.pow(e.clientY-r.top-cy,2));if(d<60){c.style.transition='transform 0.1s ease,opacity 0.1s ease';c.style.transform='scale(1.3) translateY(-4px)';c.style.opacity='1';setTimeout(function(){c.style.transition='transform 0.6s cubic-bezier(.22,1,.36,1),opacity 0.6s ease';c.style.transform='';c.style.opacity='';},120);}});});}
+    if(mode==='glow'){wrap.addEventListener('mousemove',function(e){var r=wrap.getBoundingClientRect();chars.forEach(function(c){var cr=c.getBoundingClientRect();var cx=cr.left+cr.width/2-r.left,cy=cr.top+cr.height/2-r.top;var d=Math.sqrt(Math.pow(e.clientX-r.left-cx,2)+Math.pow(e.clientY-r.top-cy,2));var f=Math.max(0,1-d/120);c.style.textShadow=f>0.05?'0 0 '+(8+f*20)+'px ${s.color}, 0 0 '+(20+f*40)+'px ${s.color}88':'';});});wrap.addEventListener('mouseleave',function(){chars.forEach(function(c){c.style.textShadow='';});});}
+    if(mode==='tilt'){wrap.addEventListener('mousemove',function(e){var r=wrap.getBoundingClientRect();var x=(e.clientX-r.left)/r.width-0.5;var y=(e.clientY-r.top)/r.height-0.5;el.style.transition='transform 0.1s ease';el.style.transform='perspective(600px) rotateY('+(x*20)+'deg) rotateX('+(-y*14)+'deg)';});wrap.addEventListener('mouseleave',function(){el.style.transition='transform 0.5s cubic-bezier(.22,1,.36,1)';el.style.transform='perspective(600px) rotateY(0deg) rotateX(0deg)';});}
+    
+`;
+  } else {
+    js += `
+    requestAnimationFrame(function(){setTimeout(function(){
+      if(mode==='char'||mode==='drop'){el.querySelectorAll('.fl-char').forEach(function(c){c.style.opacity='1';c.style.transform='translateY(0) rotate(0deg)';});}
+      else if(mode==='word'||mode==='scale'){el.querySelectorAll('.fl-word').forEach(function(w){w.style.opacity='1';w.style.filter='blur(0)';w.style.transform='scale(1)';});}
+      else if(['reveal','slide','flip'].indexOf(mode)>-1){el.querySelectorAll('.fl-reveal').forEach(function(r){r.style.transform='translateY(0) translateX(0) rotateX(0)';r.style.opacity='1';});}
+    },80);});
+`;
+  }
+
+  js += `  }
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+})();`;
+  return js;
+}
+
+function buildWidgetHtml(s, sizePx) {
+  const fontObj   = getFontObj(s.fontKey);
+  const fontLink  = fontObj.url
+    ? `<link rel="stylesheet" href="${fontObj.url}">`
+    : `<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">`;
+  const hlHtml    = buildHeadline(s, sizePx);
+  const interJS   = buildInteractionJS(s);
+  const twCss     = s.mode === 'typewriter' ? `@keyframes twBlink{0%,100%{opacity:1}50%{opacity:0}}` : '';
+  const spCss = '';
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+${fontLink}
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;overflow:hidden;}
+body{height:100%;overflow:hidden;margin:0;-webkit-font-smoothing:antialiased;}
+${twCss}
+${spCss}
+#fl-wrap{position:relative;width:100%;height:100%;display:flex;align-items:center;overflow:hidden;pointer-events:all;cursor:default;}
+#fl-text{
+  display:block;
+  width:100%;
+  font-family:${fontObj.css};
+  font-size:${sizePx}px;
+  font-weight:${s.weight};
+  line-height:${s.lh};
+  letter-spacing:${s.spacing}em;
+  text-align:${s.align};
+  color:${s.color};
+  cursor:default;
+}
+</style>
+</head>
+<body>
+<div id="fl-wrap">
+  <div id="fl-spotlight"></div>
+  <div id="fl-text">${hlHtml}</div>
+</div>
+<script>${interJS}<\/script>
+</body>
+</html>`;
+}
+
+/* ── 렌더 ── */
+function render() {
+  const s    = getState();
+  const html = buildWidgetHtml(s, s.sizePc);
+  const pcH  = calcHeight(s.sizePc, s.lh, s.text);
+
+  const iframe = document.getElementById('preview-main');
+  iframe.style.height = pcH + 'px';
+  iframe.src = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+
+  updateCode(s, pcH);
+}
+
+/* ── 생성 코드 ── */
+function updateCode(s, pcH) {
+  /* 생성 코드용 HTML - @media 모바일 폰트 포함 (buildWidgetHtml과 별도) */
+  const fontObj  = getFontObj(s.fontKey);
+  const fontLink = fontObj.url
+    ? `<link rel="stylesheet" href="${fontObj.url}">`
+    : `<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">`;
+  const hlHtml  = buildHeadline(s, s.sizePc);
+  const interJS = buildInteractionJS(s);
+  const twCss   = s.mode === 'typewriter' ? `@keyframes twBlink{0%,100%{opacity:1}50%{opacity:0}}` : '';
+  const spCss = '';
+
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+${fontLink}
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;overflow:hidden;}
+body{height:100%;overflow:hidden;margin:0;-webkit-font-smoothing:antialiased;}
+${twCss}
+${spCss}
+#fl-wrap{position:relative;width:100%;height:100%;display:flex;align-items:center;overflow:hidden;pointer-events:all;cursor:default;}
+#fl-text{display:block;width:100%;font-family:${fontObj.css};font-size:${s.sizePc}px;font-weight:${s.weight};line-height:${s.lh};letter-spacing:${s.spacing}em;text-align:${s.align};color:${s.color};cursor:default;}
+@media(max-width:768px){#fl-text{font-size:${s.sizeMobile}px;}}
+</style>
+</head>
+<body>
+<div id="fl-wrap">
+  <div id="fl-spotlight"></div>
+  <div id="fl-text">${hlHtml}</div>
+</div>
+<script>${interJS}<\/script>
+</body>
+</html>`;
+
+  const encoded = btoa(unescape(encodeURIComponent(html)));
+  const mobileH = calcHeight(s.sizeMobile, s.lh, s.text);
+
+  const code =
+`<iframe src="data:text/html;base64,${encoded}" frameborder="0" scrolling="no" style="border:none; width:100%; display:block; height:${pcH}px; min-height:${pcH}px;"></iframe>
+<style>
+  @media (max-width: 768px) {
+    iframe[src^="data:text/html;base64"] { height: ${mobileH}px !important; min-height: ${mobileH}px !important; }
+  }
+</style>`;
+  document.getElementById('code-output').textContent = code;
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('code-output').textContent).then(() => {
+    const el = document.getElementById('copy-status');
+    el.textContent = '✓ 코드가 클립보드에 복사되었습니다';
+    el.style.opacity = '1';
+    setTimeout(() => { el.style.opacity = '0'; }, 2500);
+  });
+}
+
+init();
+</script>
+</body>
+</html>

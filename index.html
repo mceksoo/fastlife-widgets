@@ -918,7 +918,7 @@
 
     /* 그라디언트 텍스트 썸네일 */
     .thumb-gradient-text {
-      font-size: 26px;
+      font-size: 33px;
       font-weight: 800;
       letter-spacing: -0.02em;
       background: linear-gradient(to right, #6366f1, #ec4899);
@@ -929,6 +929,67 @@
       padding: 0 16px;
       line-height: 1.2;
     }
+
+    /* 텍스트 애니메이션 썸네일 */
+    .thumb-text-anim {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .thumb-text-anim-line {
+      font-size: 33px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #e91e8c;
+      line-height: 1.2;
+      min-height: 1.2em;
+      display: block;
+    }
+    .thumb-ta-cursor {
+      display: inline-block;
+      width: 3px;
+      height: 1em;
+      background: #e91e8c;
+      vertical-align: -0.1em;
+      margin-left: 3px;
+      animation: thumbCursorBlink 0.8s step-end infinite;
+    }
+    @keyframes thumbCursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* 후기 캐러셀 롤링 */
+    .thumb-review-wrap { overflow: hidden; }
+    .thumb-review-row { flex-wrap: nowrap; width: max-content; }
+    @keyframes thumbScrollLeft  { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @keyframes thumbScrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+    /* 공지바 슬라이드 - 세로 위로 롤링 */
+    .thumb-notice-slide {
+      display: flex;
+      flex-direction: column;
+      animation: thumbNoticeSlide 4s linear infinite;
+    }
+    .thumb-notice-slide span { display: block; white-space: nowrap; line-height: 1.4em; height: 1.4em; }
+    @keyframes thumbNoticeSlide {
+      0%        { transform: translateY(0); }
+      28%       { transform: translateY(0); }
+      33%       { transform: translateY(-1.4em); }
+      61%       { transform: translateY(-1.4em); }
+      66%       { transform: translateY(-2.8em); }
+      94%       { transform: translateY(-2.8em); }
+      99%       { transform: translateY(-4.2em); }
+      100%      { transform: translateY(-4.2em); }
+    }
+    /* 공지바 도트 인디케이터 애니메이션 */
+    .thumb-notice-dot { transition: width 0.3s; }
+    .thumb-notice-dot-1 { animation: thumbDot1 6s step-end infinite; }
+    .thumb-notice-dot-2 { animation: thumbDot2 6s step-end infinite; }
+    .thumb-notice-dot-3 { animation: thumbDot3 6s step-end infinite; }
+    @keyframes thumbDot1 { 0%,33%{ width:16px; background:var(--accent); } 34%,100%{ width:6px; background:var(--border-md); } }
+    @keyframes thumbDot2 { 0%,33%{ width:6px; background:var(--border-md); } 34%,66%{ width:16px; background:var(--accent); } 67%,100%{ width:6px; background:var(--border-md); } }
+    @keyframes thumbDot3 { 0%,66%{ width:6px; background:var(--border-md); } 67%,99%{ width:16px; background:var(--accent); } 100%{ width:6px; background:var(--border-md); } }
 
     /* ── 특징 섹션 ── */
     .features-grid {
@@ -1126,6 +1187,9 @@
     .fade-up:nth-child(6) {
       animation-delay: 0.4s;
     }
+    .fade-up:nth-child(7) {
+      animation-delay: 0.46s;
+    }
 
     /* ── 반응형 ── */
     @media (max-width: 900px) {
@@ -1232,7 +1296,7 @@
       </div>
       <div class="hero-stats">
         <div class="stat-item">
-          <div class="stat-num">6</div>
+          <div class="stat-num">7</div>
           <div class="stat-label">무료 위젯</div>
         </div>
         <div class="stat-divider"></div>
@@ -1394,11 +1458,7 @@
                 <span class="rolling-text">🎉 이벤트 진행 중 &nbsp;·&nbsp; 마감 임박 할인 &nbsp;·&nbsp; 지금 확인하세요</span>
               </div>
             </div>
-            <div style="display:flex;gap:6px;">
-              <div style="height:6px;border-radius:3px;background:var(--border-md);flex:1;"></div>
-              <div style="height:6px;border-radius:3px;background:var(--border-md);flex:2;"></div>
-              <div style="height:6px;border-radius:3px;background:var(--border-md);flex:1.5;"></div>
-            </div>
+
           </div>
         </div>
         <div class="widget-card-body">
@@ -1417,18 +1477,19 @@
 
       <!-- 롤링 텍스트 공지바 -->
       <a href="rolling_notice_bar.html" class="widget-card fade-up" target="_blank" rel="noopener">
-        <div class="widget-card-thumb" style="flex-direction:column;gap:10px;">
+        <div class="widget-card-thumb" style="flex-direction:column;gap:10px;overflow:hidden;">
           <div style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:6px;">
-            <div
-              style="background:var(--accent);color:var(--accent-fg);border-radius:8px;padding:10px 16px;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:space-between;">
-              <span>📢 첫 번째 공지 메시지입니다</span>
-              <span style="opacity:0.5;font-size:10px;">1/3</span>
+            <div style="background:var(--accent);color:var(--accent-fg);border-radius:8px;padding:10px 16px;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:space-between;overflow:hidden;">
+              <div style="overflow:hidden;flex:1;height:1.4em;">
+                <div class="thumb-notice-slide">
+                  <span>📢 첫 번째 공지 메시지입니다</span>
+                  <span>🎉 두 번째 공지 메시지입니다</span>
+                  <span>✅ 세 번째 공지 메시지입니다</span>
+                  <span>📢 첫 번째 공지 메시지입니다</span>
+                </div>
+              </div>
             </div>
-            <div style="display:flex;justify-content:center;gap:4px;">
-              <div style="width:16px;height:3px;border-radius:2px;background:var(--accent);"></div>
-              <div style="width:6px;height:3px;border-radius:2px;background:var(--border-md);"></div>
-              <div style="width:6px;height:3px;border-radius:2px;background:var(--border-md);"></div>
-            </div>
+
           </div>
         </div>
         <div class="widget-card-body">
@@ -1491,7 +1552,7 @@
       <a href="review_carousel.html" class="widget-card fade-up" target="_blank" rel="noopener">
         <div class="widget-card-thumb" style="padding:0;">
           <div class="thumb-review-wrap">
-            <div class="thumb-review-row">
+            <div class="thumb-review-row" style="animation:thumbScrollLeft 12s linear infinite;">
               <div class="thumb-review-card">
                 <div class="thumb-review-stars">★★★★★</div>
                 <div class="thumb-review-text">정말 도움이 됐어요. 강력 추천합니다!</div>
@@ -1507,8 +1568,18 @@
                 <div class="thumb-review-text">페이지 전환율이 올라갔어요!</div>
                 <div class="thumb-review-author">박OO · 크리에이터</div>
               </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">정말 도움이 됐어요. 강력 추천합니다!</div>
+                <div class="thumb-review-author">김OO · 마케터</div>
+              </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">코딩 없이 바로 쓸 수 있어서 편했어요.</div>
+                <div class="thumb-review-author">이OO · 강사</div>
+              </div>
             </div>
-            <div class="thumb-review-row" style="margin-left:-50px; padding-right:0; padding-left:66px;">
+            <div class="thumb-review-row" style="animation:thumbScrollRight 12s linear infinite;">
               <div class="thumb-review-card">
                 <div class="thumb-review-stars">★★★★★</div>
                 <div class="thumb-review-text">설정이 직관적이고 결과물이 예뻐요.</div>
@@ -1523,6 +1594,16 @@
                 <div class="thumb-review-stars">★★★★★</div>
                 <div class="thumb-review-text">무료인데 이 퀄리티면 충분합니다.</div>
                 <div class="thumb-review-author">강OO · 유튜버</div>
+              </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">설정이 직관적이고 결과물이 예뻐요.</div>
+                <div class="thumb-review-author">최OO · 사업자</div>
+              </div>
+              <div class="thumb-review-card">
+                <div class="thumb-review-stars">★★★★★</div>
+                <div class="thumb-review-text">완전 만족이에요. 강의 페이지에 딱!</div>
+                <div class="thumb-review-author">정OO · 강사</div>
               </div>
             </div>
           </div>
@@ -1544,7 +1625,7 @@
       <!-- 그라디언트 텍스트 -->
       <a href="gradient_text.html" class="widget-card fade-up" target="_blank" rel="noopener">
         <div class="widget-card-thumb">
-          <div class="thumb-gradient-text">나만의 그라디언트 텍스트</div>
+          <div class="thumb-gradient-text">나만의 그라디언트<br>텍스트</div>
         </div>
         <div class="widget-card-body">
           <div class="widget-card-tags">
@@ -1553,6 +1634,28 @@
           </div>
           <div class="widget-card-name">그라디언트 텍스트</div>
           <div class="widget-card-desc">퍼블에서 적용할 수 없는 그라디언트 색상을 텍스트에 입혀보세요. 22가지 폰트와 8가지 프리셋을 지원합니다.</div>
+          <div class="widget-card-footer">
+            <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
+            <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>
+          </div>
+        </div>
+      </a>
+
+      <!-- 텍스트 애니메이션 -->
+      <a href="text_animation.html" class="widget-card fade-up" target="_blank" rel="noopener">
+        <div class="widget-card-thumb" id="thumb-ta">
+          <div class="thumb-text-anim" id="thumb-ta-inner">
+            <div class="thumb-text-anim-line" id="thumb-ta-line1"></div>
+            <div class="thumb-text-anim-line" id="thumb-ta-line2"></div>
+          </div>
+        </div>
+        <div class="widget-card-body">
+          <div class="widget-card-tags">
+            <span class="tag">애니메이션</span>
+            <span class="tag">타이포</span>
+          </div>
+          <div class="widget-card-name">텍스트 애니메이션</div>
+          <div class="widget-card-desc">히어로 텍스트에 인상적인 등장 애니메이션과 마우스 반응 효과를 적용하세요. 8가지 등장 모드와 4가지 마우스 반응을 지원합니다.</div>
           <div class="widget-card-footer">
             <span class="widget-card-badge"><span class="badge-free">FREE</span></span>
             <span class="widget-card-link">빌더 열기 <span class="arrow-icon">→</span></span>
@@ -1697,6 +1800,66 @@
       observer.observe(el);
     });
   </script>
+<script>
+(function() {
+  var taLines = ['당신의 브랜드를', '다음 레벨로'];
+  var taCursor = null;
+
+  function typewriterThumb() {
+    var l1 = document.getElementById('thumb-ta-line1');
+    var l2 = document.getElementById('thumb-ta-line2');
+    if (!l1 || !l2) return;
+
+    /* 완전 초기화 - 기존 커서 포함 전체 내용 제거 */
+    l1.innerHTML = '';
+    l2.innerHTML = '';
+    taCursor = null;
+
+    /* 새 커서 생성 */
+    var cursor = document.createElement('span');
+    cursor.className = 'thumb-ta-cursor';
+    taCursor = cursor;
+    l1.appendChild(cursor);
+
+    var charDelay = 60;
+    var line1 = taLines[0];
+    var line2 = taLines[1];
+    var i = 0;
+
+    function typeChar() {
+      /* 커서가 DOM에 없으면 중단 (다음 사이클 시작된 경우) */
+      if (cursor !== taCursor) return;
+
+      if (i < line1.length) {
+        l1.insertBefore(document.createTextNode(line1[i]), cursor);
+        i++;
+        setTimeout(typeChar, charDelay + Math.random() * 20);
+      } else if (i === line1.length) {
+        /* 1번줄 완료 → 커서 2번줄로 이동 */
+        if (cursor.parentNode === l1) l1.removeChild(cursor);
+        l2.appendChild(cursor);
+        i++;
+        setTimeout(typeChar, charDelay * 3);
+      } else {
+        var j = i - line1.length - 1;
+        if (j < line2.length) {
+          if (cursor.parentNode === l2) {
+            l2.insertBefore(document.createTextNode(line2[j]), cursor);
+          }
+          i++;
+          setTimeout(typeChar, charDelay + Math.random() * 20);
+        }
+        /* 완료 - 커서 유지 */
+      }
+    }
+    typeChar();
+  }
+
+  typewriterThumb();
+  setInterval(typewriterThumb, 5000);
+
+})();
+</script>
 </body>
 
 </html>

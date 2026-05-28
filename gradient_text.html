@@ -83,16 +83,39 @@
   .preset-name { font-size: 10px; color: var(--text2); text-align: center; white-space: nowrap; }
   /* 폰트 목록 */
   .font-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .font-btn {
-    padding: 8px 10px; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
-    background: var(--surface2); cursor: pointer; transition: border-color 0.15s;
-    font-family: inherit; text-align: left; width: 100%; display: flex; flex-direction: column; gap: 2px;
+  /* 폰트 드롭다운 */
+  .font-dropdown { position: relative; width: 100%; }
+  .font-trigger {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 11px; background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); cursor: pointer; transition: border-color 0.15s;
+    font-size: 15px; color: var(--text);
   }
-  .font-btn:hover { border-color: var(--border2); background: var(--surface); }
-  .font-btn.active { border-color: var(--accent); background: var(--surface); }
-  .font-btn-label { font-size: 11px; color: var(--text2); }
-  .font-category { font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin: 14px 0 8px; }
-  .font-category:first-child { margin-top: 0; }
+  .font-trigger:hover { border-color: var(--border2); }
+  .font-trigger.open { border-color: var(--border2); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .font-trigger-name { font-size: 13px; color: var(--text); }
+  .font-trigger-arrow { font-size: 10px; color: var(--text3); transition: transform 0.15s; }
+  .font-trigger.open .font-trigger-arrow { transform: rotate(180deg); }
+  .font-list-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+    background: var(--surface); border: 0.5px solid var(--border2);
+    border-top: none; border-bottom-left-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm);
+    max-height: 280px; overflow-y: auto; display: none;
+  }
+  .font-list-dropdown.open { display: block; }
+  .font-option {
+    padding: 9px 12px; cursor: pointer; transition: background 0.1s;
+    border-bottom: 0.5px solid var(--border); font-size: 15px; color: var(--text);
+  }
+  .font-option:last-child { border-bottom: none; }
+  .font-option:hover { background: var(--surface2); }
+  .font-option.active { background: var(--surface2); color: var(--accent); }
+  .font-option-sub { font-size: 10px; color: var(--text3); font-family: inherit !important; margin-top: 1px; }
+  .font-group-label {
+    padding: 6px 12px 3px; font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text3); background: var(--bg);
+    border-bottom: 0.5px solid var(--border); pointer-events: none;
+  }
   /* 우패널 */
   .right-panel { position: sticky; top: 24px; }
   .preview-frame { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
@@ -138,6 +161,16 @@
       <div class="field">
         <label>텍스트 내용</label>
         <textarea id="opt-text" oninput="render()">나만의 그라디언트 텍스트</textarea>
+      </div>
+      <div class="field">
+        <label>폰트</label>
+        <div class="font-dropdown" id="font-dropdown">
+          <div class="font-trigger" id="font-trigger" onclick="toggleFontDropdown()">
+            <span class="font-trigger-name" id="font-trigger-name">프리텐다드 (기본)</span>
+            <span class="font-trigger-arrow">▼</span>
+          </div>
+          <div class="font-list-dropdown" id="font-list-dropdown"></div>
+        </div>
       </div>
       <div class="row2">
         <div class="field">
@@ -225,11 +258,7 @@
       </div>
     </div>
 
-    <!-- 폰트 선택 -->
-    <div class="card">
-      <div class="card-title">폰트 선택</div>
-      <div id="font-list"></div>
-    </div>
+
 
 
 
@@ -285,8 +314,13 @@ const FONTS = [
   { key: 'lobster',      name: 'Lobster',          label: 'Lobster',          category: '영문 핸드라이팅', url: 'https://fonts.googleapis.com/css2?family=Lobster&display=swap',                         css: "'Lobster',cursive" },
   { key: 'blackhansans', name: 'Black Han Sans',   label: 'Black Han Sans',   category: '한국어 산세리프', url: 'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap',                  css: "'Black Han Sans',sans-serif" },
   { key: 'noto-sans-kr', name: 'Noto Sans KR',     label: 'Noto Sans KR',     category: '한국어 산세리프', url: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap',    css: "'Noto Sans KR',sans-serif" },
+  { key: 'do-hyeon',     name: 'Do Hyeon',          label: 'Do Hyeon',          category: '한국어 산세리프', url: 'https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap',                        css: "'Do Hyeon',sans-serif" },
+  { key: 'jua',          name: 'Jua',               label: 'Jua',               category: '한국어 산세리프', url: 'https://fonts.googleapis.com/css2?family=Jua&display=swap',                             css: "'Jua',sans-serif" },
+  { key: 'gugi',         name: 'Gugi',              label: 'Gugi',              category: '한국어 산세리프', url: 'https://fonts.googleapis.com/css2?family=Gugi&display=swap',                            css: "'Gugi',sans-serif" },
   { key: 'noto-serif-kr',name: 'Noto Serif KR',    label: 'Noto Serif KR',    category: '한국어 세리프',   url: 'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&display=swap',   css: "'Noto Serif KR',serif" },
   { key: 'nanum-myeongjo', name: 'Nanum Myeongjo', label: 'Nanum Myeongjo',   category: '한국어 세리프',   url: 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap',   css: "'Nanum Myeongjo',serif" },
+  { key: 'hahmlet',      name: 'Hahmlet',           label: 'Hahmlet',           category: '한국어 세리프',   url: 'https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;700;900&display=swap',          css: "'Hahmlet',serif" },
+  { key: 'stylish',      name: 'Stylish',           label: 'Stylish',           category: '한국어 디스플레이', url: 'https://fonts.googleapis.com/css2?family=Stylish&display=swap',                       css: "'Stylish',sans-serif" },
 ];
 
 let currentFont = 'pretendard';
@@ -330,32 +364,69 @@ function buildPresetGrid() {
   });
 }
 
-function buildFontList() {
-  const container = document.getElementById('font-list');
-  container.innerHTML = '';
+const loadedFonts = new Set();
+
+function loadFont(fontObj) {
+  if (!fontObj.url || loadedFonts.has(fontObj.key)) return;
+  loadedFonts.add(fontObj.key);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet'; link.href = fontObj.url;
+  document.head.appendChild(link);
+}
+
+function buildFontDropdown() {
+  const list = document.getElementById('font-list-dropdown');
+  list.innerHTML = '';
   let lastCat = '';
   FONTS.forEach(f => {
+    /* 구글 폰트 미리 로드 (드롭다운 미리보기용) */
+    loadFont(f);
     if (f.category !== lastCat) {
       lastCat = f.category;
-      const cat = document.createElement('div');
-      cat.className = 'font-category';
-      cat.textContent = f.category;
-      container.appendChild(cat);
+      const grp = document.createElement('div');
+      grp.className = 'font-group-label';
+      grp.textContent = f.category;
+      list.appendChild(grp);
     }
-    const btn = document.createElement('button');
-    btn.className = 'font-btn' + (f.key === currentFont ? ' active' : '');
-    btn.dataset.key = f.key;
-    /* 미리 로드된 폰트로 버튼 이름 표시 */
-    btn.innerHTML = `<span class="font-btn-label">${f.label}</span>`;
-    btn.onclick = () => {
+    const opt = document.createElement('div');
+    opt.className = 'font-option' + (f.key === currentFont ? ' active' : '');
+    opt.dataset.key = f.key;
+    opt.innerHTML = `<div style="font-family:${f.css};line-height:1.3;">${f.label}</div><div class="font-option-sub">${f.category}</div>`;
+    opt.onclick = () => {
       currentFont = f.key;
-      document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      document.querySelectorAll('.font-option').forEach(o => { o.classList.remove('active'); o.classList.remove('focused'); });
+      opt.classList.add('active');
+      document.getElementById('font-trigger-name').textContent = f.label;
+      document.getElementById('font-trigger-name').style.fontFamily = f.css;
+      closeFontDropdown();
       render();
     };
-    container.appendChild(btn);
+    list.appendChild(opt);
   });
 }
+
+function toggleFontDropdown() {
+  const trigger = document.getElementById('font-trigger');
+  const dropdown = document.getElementById('font-list-dropdown');
+  const isOpen = dropdown.classList.contains('open');
+  if (isOpen) { closeFontDropdown(); } else {
+    trigger.classList.add('open');
+    dropdown.classList.add('open');
+    /* 현재 선택 항목으로 스크롤 */
+    const active = dropdown.querySelector('.font-option.active');
+    if (active) active.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function closeFontDropdown() {
+  document.getElementById('font-trigger').classList.remove('open');
+  document.getElementById('font-list-dropdown').classList.remove('open');
+}
+
+/* 드롭다운 외부 클릭 시 닫기 */
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('font-dropdown').contains(e.target)) closeFontDropdown();
+});
 
 function setColor(cId, tId, val) {
   const c = document.getElementById(cId); if (c) c.value = val;
@@ -510,7 +581,7 @@ function copyCode() {
 }
 
 buildPresetGrid();
-buildFontList();
+buildFontDropdown();
 render();
 </script>
 </body>
